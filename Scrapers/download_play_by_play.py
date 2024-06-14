@@ -52,7 +52,7 @@ def download_play_by_play(schedule_url, seasons, season_types, schedule_filename
 
 if __name__ == '__main__':
     seasons = range(2019, 2023)
-    seasons = [f'{season}-{season + 1}' for season in seasons]
+    seasons = [f'{season}-{int(str(season)[2:]) + 1}' for season in seasons]
     season_types = ['Regular Season', 'PlayIn', 'Playoffs']
     schedule_url = "http://stats.nba.com/stats/leaguegamelog/?leagueId=00&season={}&seasonType={}&playerOrTeam=T&counter=0&sorter=PTS&direction=ASC&dateFrom=&dateTo="
     play_by_play_url = "https://stats.nba.com/stats/playbyplayv2/?gameId={0}&startPeriod=0&endPeriod=14"
