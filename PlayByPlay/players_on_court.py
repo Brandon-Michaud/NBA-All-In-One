@@ -49,7 +49,7 @@ def get_players_on_court(seasons, season_types, schedule_filename, play_by_play_
     for season in seasons:
         for season_type in season_types:
             # Read schedule
-            schedule = pd.read_csv(schedule_filename.format(season, season_type))
+            schedule = pd.read_csv(schedule_filename.format(season, season_type), dtype=str)
 
             # Extract the game IDs from the schedule
             game_ids = schedule['GAME_ID'].unique()
@@ -121,7 +121,7 @@ def get_players_on_court(seasons, season_types, schedule_filename, play_by_play_
                     rows.append(row)
 
                     # Sleep for 0.75 seconds to stay under the rate limit
-                    time.sleep(.75)
+                    time.sleep(0.75)
 
                 # If there was an error getting the data for one of the periods, do not proceed with saving the game
                 if game_error:
