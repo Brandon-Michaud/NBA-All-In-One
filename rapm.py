@@ -5,14 +5,13 @@ from sklearn.linear_model import RidgeCV
 
 # Get sorted list of unique player IDs from the possessions data
 def find_unique_ids(possessions):
-    players = list(
-        set(list(possessions['offensePlayer1Id'].unique()) + list(possessions['offensePlayer2Id'].unique()) + list(
-            possessions['offensePlayer3Id']) + \
-            list(possessions['offensePlayer4Id'].unique()) + list(possessions['offensePlayer5Id'].unique()) + list(
-            possessions['defensePlayer1Id'].unique()) + \
-            list(possessions['defensePlayer2Id'].unique()) + list(possessions['defensePlayer3Id'].unique()) + list(
-            possessions['defensePlayer4Id'].unique()) + \
-            list(possessions['defensePlayer5Id'].unique())))
+    players = list(set(
+        list(possessions['offensePlayer1Id'].unique()) + list(possessions['offensePlayer2Id'].unique()) +
+        list(possessions['offensePlayer3Id'].unique()) + list(possessions['offensePlayer4Id'].unique()) +
+        list(possessions['offensePlayer5Id'].unique()) + list(possessions['defensePlayer1Id'].unique()) +
+        list(possessions['defensePlayer2Id'].unique()) + list(possessions['defensePlayer3Id'].unique()) +
+        list(possessions['defensePlayer4Id'].unique()) + list(possessions['defensePlayer5Id'].unique())
+    ))
     players.sort()
     return players
 

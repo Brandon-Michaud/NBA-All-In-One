@@ -71,9 +71,9 @@ def download_play_by_play(schedule_url, seasons, season_types, schedule_filename
 
 
 if __name__ == '__main__':
-    seasons = range(1996, 2024)
+    seasons = range(2019, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['Regular Season', 'Playoffs']
+    season_types = ['PlayIn']
     schedule_url = "http://stats.nba.com/stats/leaguegamelog/?leagueId=00&season={}&seasonType={}&playerOrTeam=T&counter=0&sorter=PTS&direction=ASC&dateFrom=&dateTo="
     play_by_play_url = "https://stats.nba.com/stats/playbyplayv2/?gameId={0}&startPeriod=0&endPeriod=14"
-    download_play_by_play(schedule_url, seasons, season_types, '../Data/Schedules/schedule_{}_{}.csv', play_by_play_url, '../Data/PlayByPlay/pbp_{}.csv', 'failed_links.pkl')
+    download_play_by_play(schedule_url, seasons, season_types, '../Data/Schedules/schedule_{}_{}.csv', play_by_play_url, '../Data/PlayByPlay/pbp_{}.csv', 'failed_links2.pkl')

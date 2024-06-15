@@ -59,7 +59,7 @@ class FoulType(Enum):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching event for number: {number}')
+        raise Exception(f'No matching foul for number: {number}')
 
 
 # Enumeration for type of rebound
@@ -72,7 +72,7 @@ class ReboundType(Enum):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching event for number: {number}')
+        raise Exception(f'No matching rebound for number: {number}')
 
 
 # Enumeration for free throw types
@@ -96,7 +96,7 @@ class FreeThrowType(Enum):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching event for number: {number}')
+        raise Exception(f'No matching free throw for number: {number}')
 
 
 # Enumeration for type turnover
@@ -111,7 +111,7 @@ class TurnoverType(Enum):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching event for number: {number}')
+        raise Exception(f'No matching turnover for number: {number}')
 
 
 # Constants for column names
