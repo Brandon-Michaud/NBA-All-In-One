@@ -1,27 +1,7 @@
 import time
-import pandas as pd
-import requests
 import pickle
 import traceback
-from api_headers import *
-
-
-# Extract the JSON data from HTTP response from stats.nba.com
-def extract_data(url):
-    # Send request and get response
-    response = requests.get(url, headers=stats_nba_com_headers)
-    response = response.json()
-
-    # Get headers and rows from response
-    result = response['resultSets'][0]
-    headers = result['headers']
-    rows = result['rowSet']
-
-    # Convert response to data frame
-    result_df = pd.DataFrame(rows)
-    result_df.columns = headers
-
-    return result_df
+from api_helpers import *
 
 
 # Download play-by-play data for given seasons
@@ -71,9 +51,9 @@ def download_play_by_play(schedule_url, seasons, season_types, schedule_filename
 
 
 if __name__ == '__main__':
-    seasons = range(2019, 2024)
+    seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['PlayIn']
+    season_types = ['Regular Season', 'Playoffs']
     schedule_url = "http://stats.nba.com/stats/leaguegamelog/?leagueId=00&season={}&seasonType={}&playerOrTeam=T&counter=0&sorter=PTS&direction=ASC&dateFrom=&dateTo="
     play_by_play_url = "https://stats.nba.com/stats/playbyplayv2/?gameId={0}&startPeriod=0&endPeriod=14"
-    download_play_by_play(schedule_url, seasons, season_types, '../Data/Schedules/schedule_{}_{}.csv', play_by_play_url, '../Data/PlayByPlay/pbp_{}.csv', 'failed_links2.pkl')
+    download_play_by_play(schedule_url, seasons, season_types, '../Data/Schedules/schedule_{}_{}.csv', play_by_play_url, '../Data/PlayByPlay/pbp_{}.csv', 'failed_links.pkl')
