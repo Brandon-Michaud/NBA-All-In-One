@@ -2,3 +2,4 @@
 .DS_Store
 Data/*
 test*
+*.pkl
