@@ -31,23 +31,36 @@ def download_play_by_play(schedule_url, seasons, season_types, schedule_filename
             # Scrape the play-by-play for every game
             for i, game_id in enumerate(game_ids):
                 print(f'{((i + 1) / n_games):.2%} {season} {season_type}: {game_id}')
-                try:
-                    play_by_play = extract_data(play_by_play_url.format(game_id))
-                except Exception as error:
-                    print(f'Error occurred: {error}')
-                    traceback.print_exc()
-                    failures[play_by_play_url.format(game_id)] = (str(error), traceback.format_exc())
-                    continue
 
-                # Save the play-by-play data
-                play_by_play.to_csv(play_by_play_filename.format(game_id), index=False)
+                # Scrape play-by-play for the game
+                results = download_play_by_play_single_game(game_id, play_by_play_url, play_by_play_filename)
 
-                # Sleep for 0.75 seconds to stay under the rate limit
-                time.sleep(.75)
+                # Check if there was an error
+                if results[0] != 0:
+                    failures[game_id] = results[1:]
 
     # Save failed links
     with open(failed_filename, 'wb') as fp:
         pickle.dump(failures, fp)
+
+
+# Download play-by-play data for a single game
+def download_play_by_play_single_game(game_id, play_by_play_url, play_by_play_filename):
+    try:
+        play_by_play = extract_data(play_by_play_url.format(game_id))
+    except Exception as error:
+        print(f'Error occurred: {error}')
+        traceback.print_exc()
+        return -1, str(error), traceback.format_exc()
+
+    # Save the play-by-play data
+    play_by_play.to_csv(play_by_play_filename.format(game_id), index=False)
+
+    # Sleep for 0.75 seconds to stay under the rate limit
+    time.sleep(.75)
+
+    # Return success code
+    return 0,
 
 
 if __name__ == '__main__':
