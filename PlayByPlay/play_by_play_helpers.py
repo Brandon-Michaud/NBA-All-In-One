@@ -1,6 +1,6 @@
 import math
 from enum import Enum
-
+import pandas as pd
 
 # Enumeration for type of play-by-play event
 class EventType(Enum):
@@ -18,13 +18,14 @@ class EventType(Enum):
     StartOfPeriod = 12
     EndOfPeriod = 13
     CatchAll = 14
+    Unimportant = -1
 
     @classmethod
     def from_number(cls, number):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching event for number: {number}')
+        return cls.Unimportant
 
 
 # Enumeration for type of foul
@@ -53,26 +54,28 @@ class FoulType(Enum):
     PersonalTake = 28
     ShootingBlock = 29
     TooManyPlayers = 30
+    Unimportant = -1
 
     @classmethod
     def from_number(cls, number):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching foul for number: {number}')
+        return cls.Unimportant
 
 
 # Enumeration for type of rebound
 class ReboundType(Enum):
     Player = 0
     Team = 1
+    Unimportant = -1
 
     @classmethod
     def from_number(cls, number):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching rebound for number: {number}')
+        return cls.Unimportant
 
 
 # Enumeration for free throw types
@@ -84,6 +87,7 @@ class FreeThrowType(Enum):
     TwoOfThree = 14
     ThreeOfThree = 15
     Technical = 16
+    Unimportant = -1
 
     def is_final_multi_ft(self):
         return self == FreeThrowType.TwoOfTwo or self == FreeThrowType.ThreeOfThree
@@ -96,7 +100,7 @@ class FreeThrowType(Enum):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching free throw for number: {number}')
+        return cls.Unimportant
 
 
 # Enumeration for type turnover
@@ -105,13 +109,14 @@ class TurnoverType(Enum):
     EightSecond = 10
     ShotClock = 11
     TooManyPlayers = 44
+    Unimportant = -1
 
     @classmethod
     def from_number(cls, number):
         for member in cls:
             if member.value == number:
                 return member
-        raise Exception(f'No matching turnover for number: {number}')
+        return cls.Unimportant
 
 
 # Constants for column names
@@ -246,14 +251,14 @@ def is_and_1(idx, event, events, event_window=20, time_window=10):
         return False
 
     # Look at future events in the window
-    subset_of_events = events[idx + 1: min(idx + event_window, len(events))]
+    subset_of_events = events[idx + 1: min(idx + event_window + 1, len(events))]
 
     # Check for a foul and then a 1 of 1 free throw
     foul = False
     ft = False
     for sub_ind, e in subset_of_events:
         # Make sure event occurred within time window
-        if event[time_elapsed] <= e[time_elapsed] <= event[time_elapsed] + time_window:
+        if not event[time_elapsed] <= e[time_elapsed] <= event[time_elapsed] + time_window:
             continue
 
         # Get the event type
@@ -282,13 +287,13 @@ def is_and_1(idx, event, events, event_window=20, time_window=10):
 
 
 # Check if an event is a made shot but not an And-1
-def is_make_and_not_and_1(idx, event, events):
+def is_make_and_not_and_1(idx, event, events, event_window=20, time_window=10):
     # Ensure event is a made shot
     if EventType.from_number(event[event_type]) != EventType.MadeShot:
         return False
 
     # Ensure there was not an And-1
-    return not is_and_1(idx, event, events)
+    return not is_and_1(idx, event, events, event_window=event_window, time_window=time_window)
 
 
 # Check if an event is a three pointer
@@ -322,3 +327,79 @@ def is_team_turnover(event):
 # Check if no player is listed for an event
 def no_player_listed(event):
     return math.isnan(event[player1_team_id])
+
+
+# Check if an event is the end of a possession
+def is_end_of_possession(idx, event, events, event_window=20, time_window=10):
+    e_type = EventType.from_number(event[event_type])
+    return (e_type == EventType.Turnover or is_last_free_throw_made(idx, event, events, window=event_window) or
+            is_defensive_rebound(idx, event, events, window=event_window) or
+            is_make_and_not_and_1(idx, event, events, event_window=event_window, time_window=time_window) or
+            e_type == EventType.EndOfPeriod)
+
+
+# We need to know how many points each shot is worth:
+def extract_points(event):
+    # Get the event type
+    e_type = EventType.from_number(event[event_type])
+
+    # 1 point if made free throw
+    if e_type == EventType.FreeThrow and not is_miss(event):
+        return 1
+
+    # 3 points if made three pointer
+    elif e_type == EventType.MadeShot and is_three(event):
+        return 3
+
+    # 2 points if made two pointer
+    elif e_type == EventType.MadeShot and not is_three(event):
+        return 2
+
+    # 0 points for any other event
+    else:
+        return 0
+
+
+# Find the time elapsed in a period at a given event
+def get_time_elapsed_period(event):
+    # Get the time on the clock and the period of the event
+    time_str = event[game_clock]
+    period = event[period_column]
+
+    # Maximum minutes in a period is 12 unless overtime
+    max_minutes = 12 if period < 5 else 5
+
+    # Get minutes and seconds from time string
+    [minutes, sec] = time_str.split(':')
+
+    # Convert minutes and seconds to integers
+    minutes = int(minutes)
+    sec = int(sec)
+
+    # Calculate minutes and seconds elapsed in period
+    min_elapsed = max_minutes - minutes - 1
+    sec_elapsed = 60 - sec
+
+    # Return time elapsed in period in seconds
+    return (min_elapsed * 60) + sec_elapsed
+
+
+# Find time elapsed in a game at a given event
+def get_time_elapsed_game(event):
+    # Find time elapsed in current period of game
+    time_in_period = get_time_elapsed_period(event)
+    period = event[period_column]
+
+    # Calculate total time elapsed up to the start of the current period
+    if period > 4:
+        return (12 * 60 * 4) + ((period - 5) * 5 * 60) + time_in_period
+    else:
+        return ((period - 1) * 12 * 60) + time_in_period
+
+
+if __name__ == '__main__':
+    test_pbp = pd.read_csv('../../NBA Tutorials/play_by_play_parser/data/0021801167_pbp.csv')
+    test_pbp[time_elapsed] = test_pbp.apply(get_time_elapsed_game, axis=1)
+    test_pbp[time_elapsed_period] = test_pbp.apply(get_time_elapsed_period, axis=1)
+    events = list(test_pbp.iterrows())
+    print(is_and_1(83, events[83][1], events))
