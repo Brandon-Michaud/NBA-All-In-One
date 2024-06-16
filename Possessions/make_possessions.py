@@ -1,4 +1,6 @@
 import pandas as pd
+import pickle
+import traceback
 from play_by_play_helpers import *
 
 
@@ -254,11 +256,47 @@ def get_possessions_single_game(game_id, play_by_play_filename, players_at_perio
     possessions_df.to_csv(possessions_filename.format(game_id), index=False)
 
 
+# Get possessions for every game for every season
+def get_possessions_seasons(seasons, season_types, schedule_filename, play_by_play_filename,
+                            players_at_period_filename, possessions_filename, failed_filename):
+    # Keep track of possession extractions
+    failures = {}
+
+    # Loop over seasons and regular season/playoffs
+    for season in seasons:
+        for season_type in season_types:
+            # Read schedule
+            schedule = pd.read_csv(schedule_filename.format(season, season_type), dtype=str)
+
+            # Extract the game IDs from the schedule
+            game_ids = schedule['GAME_ID'].unique()
+            n_games = len(game_ids)
+
+            # Get possessions for each game
+            for i, game_id in enumerate(game_ids):
+                print(f'{((i + 1) / n_games):.2%} {season} {season_type}: {game_id}')
+
+                # Get possessions for the game
+                try:
+                    get_possessions_single_game(game_id, play_by_play_filename,
+                                                players_at_period_filename, possessions_filename)
+                except Exception as error:
+                    print(f'Error occurred: {error}')
+                    traceback.print_exc()
+                    failures[game_id] = str(error), traceback.format_exc()
+
+    # Save failed links
+    with open(failed_filename, 'wb') as fp:
+        pickle.dump(failures, fp)
+
+
 if __name__ == '__main__':
-    # play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
-    # players_at_period_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
-    # possessions_filename = '../Data/Possessions/possessions_{}.csv'
-    play_by_play_filename = '../../NBA Tutorials/play_by_play_parser/data/0021801167_pbp.csv'
-    players_at_period_filename = '../../NBA Tutorials/play_by_play_parser/data/0021801167_players_at_period.csv'
-    possessions_filename = 'test.csv'
-    get_possessions_single_game('0021801167', play_by_play_filename, players_at_period_filename, possessions_filename)
+    seasons = range(1996, 2024)
+    seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
+    season_types = ['Regular Season', 'Playoffs']
+    schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
+    play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
+    players_at_period_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
+    possessions_filename = '../Data/Possessions/possessions_{}.csv'
+    get_possessions_seasons(seasons, season_types, schedule_filename, play_by_play_filename,
+                            players_at_period_filename, possessions_filename, 'failed_possessions')
