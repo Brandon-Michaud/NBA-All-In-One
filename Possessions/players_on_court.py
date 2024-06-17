@@ -36,6 +36,10 @@ def frame_to_row(df):
     players2 = df[df['TEAM_ID'] == team2]['PLAYER_ID'].tolist()
     players2.sort()
 
+    # Ensure five players were found for both teams
+    if len(players1) != 5 or len(players2) != 5:
+        raise Exception('Did not find 5 players')
+
     return [team1, players1, team2, players2]
 
 
@@ -135,8 +139,17 @@ def get_players_on_court_single_game_slow(game_id, play_by_play_filename, advanc
             ['PLAYER_NAME', 'PLAYER_ID', 'TEAM_ID', 'PERIOD']]
 
         # Create row for period
-        row = frame_to_row(joined_players)
+        try:
+            row = frame_to_row(joined_players)
+        except Exception as error:
+            print(f'Error occurred: {error}')
+            traceback.print_exc()
+            return -1, str(error), traceback.format_exc()
+
+        # Add period to row
         row.append(period)
+
+        # Add row to list of rows
         rows.append(row)
 
         # Sleep for 0.75 seconds to stay under the rate limit
@@ -192,6 +205,9 @@ def get_players_on_court_fast(seasons, season_types, schedule_filename, play_by_
 def get_players_on_court_single_game_fast(game_id, play_by_play_filename, players_on_court_filename):
     # Get the play-by-play for the game
     play_by_play = pd.read_csv(play_by_play_filename.format(game_id))
+
+    # Remove technical fouls because players on bench can receive them
+    play_by_play = play_by_play[~((play_by_play['EVENTMSGTYPE'] == 6) & (play_by_play['EVENTMSGACTIONTYPE'] == 11))]
 
     # Replace NA values with empty strings
     play_by_play = play_by_play.fillna('')
@@ -250,9 +266,12 @@ def get_players_on_court_single_game_fast(game_id, play_by_play_filename, player
             row.append(int(team))
 
             # Get the player IDs for each player column if they are on the current team
-            players1 = period_play_by_play['PLAYER1_ID'][period_play_by_play['PLAYER1_TEAM_ID'] == team]
-            players2 = period_play_by_play['PLAYER2_ID'][period_play_by_play['PLAYER2_TEAM_ID'] == team]
-            players3 = period_play_by_play['PLAYER3_ID'][period_play_by_play['PLAYER3_TEAM_ID'] == team]
+            players1 = period_play_by_play['PLAYER1_ID'][(period_play_by_play['PLAYER1_TEAM_ID'] == team) &
+                                                         (period_play_by_play['PLAYER1_ID'] != 0)]
+            players2 = period_play_by_play['PLAYER2_ID'][(period_play_by_play['PLAYER2_TEAM_ID'] == team) &
+                                                         (period_play_by_play['PLAYER2_ID'] != 0)]
+            players3 = period_play_by_play['PLAYER3_ID'][(period_play_by_play['PLAYER3_TEAM_ID'] == team) &
+                                                         (period_play_by_play['PLAYER3_ID'] != 0)]
 
             # Join the player IDs with the subs for this period
             joined_players1 = pd.merge(players1, players_subbed_in_at_period, left_on=['PLAYER1_ID'],
@@ -338,6 +357,8 @@ if __name__ == '__main__':
     play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
     players_on_court_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
     # get_players_on_court_fast(seasons, season_types, schedule_filename, play_by_play_filename,
-    #                           players_on_court_filename, 'failed_links3.pkl')
-    fix_fast_failures('failed_links3.pkl', play_by_play_filename, advanced_box_score_url,
-                      players_on_court_filename, 'failed_links4.pkl')
+    #                           players_on_court_filename, 'Fails/failed_starters.pkl')
+    fix_fast_failures('Fails/failed_starters.pkl', play_by_play_filename, advanced_box_score_url,
+                      players_on_court_filename, 'Fails/failed_starters2.pkl')
+    # get_players_on_court_single_game_slow('0029600997', play_by_play_filename, advanced_box_score_url,
+    #                                       players_on_court_filename)
