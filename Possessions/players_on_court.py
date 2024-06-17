@@ -116,7 +116,7 @@ def get_players_on_court_single_game_slow(game_id, play_by_play_filename, advanc
         ['PLAYER_ID', 'PERIOD', 'SUB']]
 
     # Get each period of the game
-    periods = players_subbed_in_at_each_period['PERIOD'].drop_duplicates().values.tolist()
+    periods = play_by_play['PERIOD'].drop_duplicates().values.tolist()
 
     # Get the players on the court at the start of each period
     rows = []
