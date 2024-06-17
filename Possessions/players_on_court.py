@@ -18,9 +18,9 @@ def calculate_start_time_of_period(period):
 
 # For each substitution, get only players who were subbed in or subbed out, but not both
 def split_subs(df, tag):
-    subs = df[[tag, 'PERIOD', 'EVENTNUM']]
+    subs = df[[tag, 'PERIOD', 'EVENTNUM', 'time_left']]
     subs['SUB'] = tag
-    subs.columns = ['PLAYER_ID', 'PERIOD', 'EVENTNUM', 'SUB']
+    subs.columns = ['PLAYER_ID', 'PERIOD', 'EVENTNUM', 'time_left', 'SUB']
     return subs
 
 
@@ -37,8 +37,12 @@ def frame_to_row(df):
     players2.sort()
 
     # Ensure five players were found for both teams
-    if len(players1) != 5 or len(players2) != 5:
-        raise Exception('Did not find 5 players')
+    if len(players1) != 5:
+        print(f'Players: {players1}')
+        raise Exception('Did not find 5 starters')
+    elif len(players2) != 5:
+        print(f'Players: {players2}')
+        raise Exception('Did not find 5 starters')
 
     return [team1, players1, team2, players2]
 
@@ -82,12 +86,16 @@ def get_players_on_court_single_game_slow(game_id, play_by_play_filename, advanc
     # Read the play-by-play data
     play_by_play = pd.read_csv(play_by_play_filename.format(game_id))
 
+    # Make new column with time remaining in period
+    # This is done to handle revisions which have been made after the fact and have event IDs much higher
+    play_by_play['time_left'] = play_by_play['PCTIMESTRING'].apply(lambda x: int(x.split(':')[0]) * 60 + int(x.split(':')[1]))
+
     # Get the substitution events from the play-by-play data
     substitutionsOnly = play_by_play[play_by_play['EVENTMSGTYPE'] == 8][
-        ['PERIOD', 'EVENTNUM', 'PLAYER1_ID', 'PLAYER2_ID']]
+        ['PERIOD', 'EVENTNUM', 'time_left', 'PLAYER1_ID', 'PLAYER2_ID']]
 
     # Rename substitution columns for easier readability
-    substitutionsOnly.columns = ['PERIOD', 'EVENTNUM', 'OUT', 'IN']
+    substitutionsOnly.columns = ['PERIOD', 'EVENTNUM', 'time_left', 'OUT', 'IN']
 
     # Split sub-ins and sub-outs into separate data frames
     subs_in = split_subs(substitutionsOnly, 'IN')
@@ -95,10 +103,13 @@ def get_players_on_court_single_game_slow(game_id, play_by_play_filename, advanc
 
     # Recombine subs where sub-ins and sub-outs are now separate rows
     full_subs = pd.concat([subs_out, subs_in], axis=0).reset_index()[
-        ['PLAYER_ID', 'PERIOD', 'EVENTNUM', 'SUB']]
+        ['PLAYER_ID', 'PERIOD', 'EVENTNUM', 'time_left', 'SUB']]
+
+    # Sort by the event number
+    full_subs = full_subs.sort_values(by='EVENTNUM', ascending=True)
 
     # Get the first substitution of each period for each player
-    first_sub_of_period = full_subs.loc[full_subs.groupby(by=['PERIOD', 'PLAYER_ID'])['EVENTNUM'].idxmin()]
+    first_sub_of_period = full_subs.loc[full_subs.groupby(by=['PERIOD', 'PLAYER_ID'])['time_left'].idxmax()]
 
     # Get player subbed in for each first substitution of each period for each player
     players_subbed_in_at_each_period = first_sub_of_period[first_sub_of_period['SUB'] == 'IN'][
@@ -120,8 +131,9 @@ def get_players_on_court_single_game_slow(game_id, play_by_play_filename, advanc
                 ['PLAYER_NAME', 'PLAYER_ID', 'TEAM_ID']]
         except Exception as error:
             print(f'Error occurred: {error}')
+            print(f'Period: {period}')
             traceback.print_exc()
-            return -1, str(error), traceback.format_exc()
+            return -1, period, str(error), traceback.format_exc()
 
         # Add period column
         boxscore_players['PERIOD'] = period
@@ -143,8 +155,8 @@ def get_players_on_court_single_game_slow(game_id, play_by_play_filename, advanc
             row = frame_to_row(joined_players)
         except Exception as error:
             print(f'Error occurred: {error}')
-            traceback.print_exc()
-            return -1, str(error), traceback.format_exc()
+            print(f'Period: {period}')
+            return -1, period, str(error)
 
         # Add period to row
         row.append(period)
@@ -212,12 +224,16 @@ def get_players_on_court_single_game_fast(game_id, play_by_play_filename, player
     # Replace NA values with empty strings
     play_by_play = play_by_play.fillna('')
 
+    # Make new column with time remaining in period
+    # This is done to handle revisions which have been made after the fact and have event IDs much higher
+    play_by_play['time_left'] = play_by_play['PCTIMESTRING'].apply(lambda x: int(x.split(':')[0]) * 60 + int(x.split(':')[1]))
+
     # Get the substitution events from the play-by-play data
     substitutionsOnly = play_by_play[play_by_play['EVENTMSGTYPE'] == 8][
-        ['PERIOD', 'EVENTNUM', 'PLAYER1_ID', 'PLAYER2_ID']]
+        ['PERIOD', 'EVENTNUM', 'time_left', 'PLAYER1_ID', 'PLAYER2_ID']]
 
     # Rename substitution columns for easier readability
-    substitutionsOnly.columns = ['PERIOD', 'EVENTNUM', 'OUT', 'IN']
+    substitutionsOnly.columns = ['PERIOD', 'EVENTNUM', 'time_left', 'OUT', 'IN']
 
     # Split sub-ins and sub-outs into separate data frames
     subs_in = split_subs(substitutionsOnly, 'IN')
@@ -225,10 +241,13 @@ def get_players_on_court_single_game_fast(game_id, play_by_play_filename, player
 
     # Recombine subs where sub-ins and sub-outs are now separate rows
     full_subs = pd.concat([subs_out, subs_in], axis=0).reset_index()[
-        ['PLAYER_ID', 'PERIOD', 'EVENTNUM', 'SUB']]
+        ['PLAYER_ID', 'PERIOD', 'EVENTNUM', 'time_left', 'SUB']]
+
+    # Sort by the event number
+    full_subs = full_subs.sort_values(by='EVENTNUM', ascending=True)
 
     # Get the first substitution of each period for each player
-    first_sub_of_period = full_subs.loc[full_subs.groupby(by=['PERIOD', 'PLAYER_ID'])['EVENTNUM'].idxmin()]
+    first_sub_of_period = full_subs.loc[full_subs.groupby(by=['PERIOD', 'PLAYER_ID'])['time_left'].idxmax()]
 
     # Get player subbed in for each first substitution of each period for each player
     players_subbed_in_at_each_period = first_sub_of_period[first_sub_of_period['SUB'] == 'IN'][
@@ -246,6 +265,7 @@ def get_players_on_court_single_game_fast(game_id, play_by_play_filename, player
     # Ensure 2 teams were found
     if len(teams) != 2:
         print('Did not find 2 teams')
+        print(f'Teams: {teams}')
         return -1, 'Did not find 2 teams'
 
     # Find the starters for each period
@@ -293,7 +313,9 @@ def get_players_on_court_single_game_fast(game_id, play_by_play_filename, player
             # Ensure 5 starters were found
             if len(sorted_players) != 5:
                 print('Did not find 5 starters')
-                return -1, 'Did not find 5 starters'
+                print(f'Players: {sorted_players}')
+                print(f'Period: {period}')
+                return -1, period, 'Did not find 5 starters'
 
             # Add players to row
             row.append(sorted_players)
@@ -356,9 +378,7 @@ if __name__ == '__main__':
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
     play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
     players_on_court_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
-    # get_players_on_court_fast(seasons, season_types, schedule_filename, play_by_play_filename,
-    #                           players_on_court_filename, 'Fails/failed_starters.pkl')
+    get_players_on_court_fast(seasons, season_types, schedule_filename, play_by_play_filename,
+                              players_on_court_filename, 'Fails/failed_starters.pkl')
     fix_fast_failures('Fails/failed_starters.pkl', play_by_play_filename, advanced_box_score_url,
                       players_on_court_filename, 'Fails/failed_starters2.pkl')
-    # get_players_on_court_single_game_slow('0029600997', play_by_play_filename, advanced_box_score_url,
-    #                                       players_on_court_filename)
