@@ -3,14 +3,25 @@ import pandas as pd
 from sklearn.linear_model import RidgeCV
 
 
+# Constants used for column names
+offense_player_id = 'offensive_player{}'
+defense_player_id = 'defensive_player{}'
+offense_player_ids = [offense_player_id.format(i) for i in range(1, 6)]
+defense_player_ids = [defense_player_id.format(i) for i in range(1, 6)]
+points_column = 'points'
+possessions_column = 'possessions'
+points_per_100_column = 'points_per_100'
+player_id = 'PLAYER_ID'
+
+
 # Get sorted list of unique player IDs from the possessions data
 def find_unique_ids(possessions):
     players = list(set(
-        list(possessions['offensePlayer1Id'].unique()) + list(possessions['offensePlayer2Id'].unique()) +
-        list(possessions['offensePlayer3Id'].unique()) + list(possessions['offensePlayer4Id'].unique()) +
-        list(possessions['offensePlayer5Id'].unique()) + list(possessions['defensePlayer1Id'].unique()) +
-        list(possessions['defensePlayer2Id'].unique()) + list(possessions['defensePlayer3Id'].unique()) +
-        list(possessions['defensePlayer4Id'].unique()) + list(possessions['defensePlayer5Id'].unique())
+        list(possessions[offense_player_id.format(1)].unique()) + list(possessions[offense_player_id.format(2)].unique()) +
+        list(possessions[offense_player_id.format(3)].unique()) + list(possessions[offense_player_id.format(4)].unique()) +
+        list(possessions[offense_player_id.format(5)].unique()) + list(possessions[defense_player_id.format(1)].unique()) +
+        list(possessions[defense_player_id.format(2)].unique()) + list(possessions[defense_player_id.format(3)].unique()) +
+        list(possessions[defense_player_id.format(4)].unique()) + list(possessions[defense_player_id.format(5)].unique())
     ))
     players.sort()
     return players
@@ -35,9 +46,7 @@ def create_training_row(row_in, unique_ids):
 # Create the one-hot encoded training set from the possessions data
 def create_training_set(possessions, target_column, unique_ids):
     # Get the sparse encodings for the player IDs from the possessions data
-    stints_x = possessions[['offensePlayer1Id', 'offensePlayer2Id', 'offensePlayer3Id', 'offensePlayer4Id',
-                            'offensePlayer5Id', 'defensePlayer1Id', 'defensePlayer2Id', 'defensePlayer3Id',
-                            'defensePlayer4Id', 'defensePlayer5Id']].to_numpy()
+    stints_x = possessions[offense_player_ids + defense_player_ids].to_numpy()
 
     # Convert each possession to a one-hot encoded row
     stints_x = np.apply_along_axis(create_training_row, 1, stints_x, unique_ids)
@@ -46,7 +55,7 @@ def create_training_set(possessions, target_column, unique_ids):
     stints_y = possessions[[target_column]].to_numpy()
 
     # Get the possessions column, necessary if using stints instead of single possessions
-    possessions_vector = possessions['possessions']
+    possessions_vector = possessions[possessions_column]
 
     return stints_x, stints_y, possessions_vector
 
@@ -87,7 +96,7 @@ def extract_coefficients_for_players(model, stat_name, unique_ids, player_names_
     intercept = model.intercept_
 
     # Apply new column names
-    players_coef.columns = ['playerId', f'{stat_name}__Off', f'{stat_name}__Def']
+    players_coef.columns = ['player_id', f'{stat_name}__Off', f'{stat_name}__Def']
 
     # Calculate sum of offensive and defensive coefficients
     # TODO: Weigh sum by number of offensive and defensive possessions played. They are often not equal
@@ -102,7 +111,7 @@ def extract_coefficients_for_players(model, stat_name, unique_ids, player_names_
     players_coef[f'{stat_name}__Intercept'] = intercept[0]
 
     # Merge with player names to provide insight beyond just player ID
-    players_coef = player_names_and_ids.merge(players_coef, how='inner', on='playerId')
+    players_coef = players_coef.merge(player_names_and_ids, how='inner', left_on='player_id', right_on=player_id)
 
     return players_coef
 
@@ -113,10 +122,10 @@ def calculate_rapm(possessions, player_names_and_ids, folds, lambdas, save_file)
     unique_ids = find_unique_ids(possessions)
 
     # Calculate the points per 100 possessions
-    possessions['PointsPerPossession'] = 100 * possessions['points'].values / possessions['possessions'].values
+    possessions[points_per_100_column] = 100 * possessions[points_column].values / possessions[possessions_column].values
 
     # Create training set for the model
-    train_x, train_y, num_possessions = create_training_set(possessions, 'PointsPerPossession', unique_ids)
+    train_x, train_y, num_possessions = create_training_set(possessions, points_per_100_column, unique_ids)
 
     # Create ridge regression model
     model = make_ridge_model(train_x, train_y, folds, num_possessions, lambdas)
@@ -131,19 +140,23 @@ def calculate_rapm(possessions, player_names_and_ids, folds, lambdas, save_file)
     rapms = rapms.reindex(sorted(rapms.columns), axis=1)
 
     # Save RAPM values to a .csv file
-    rapms.to_csv(save_file)
+    rapms.to_csv(save_file, index=False)
 
 
 if __name__ == '__main__':
-    # Load data
-    possessions = pd.read_csv('Data/rapm_possessions.csv')
-    player_names_and_ids = pd.read_csv('Data/player_names.csv')
+    seasons = range(1996, 2024)
+    seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
+    season_types = ['Regular Season', 'Playoffs']
+    possessions_filename = 'Data/Possessions/possessions_{}_{}.csv'
+    players_and_ids_filename = 'Data/players_and_ids.csv'
+    rapm_filename = 'Data/RAPM/rapm_{}_{}.csv'
 
-    # Filter out 0 possession possessions
-    possessions = possessions[possessions['possessions'] > 0]
+    possessions = pd.read_csv(possessions_filename.format('2023-24', 'Regular Season'))
+    player_names_and_ids = pd.read_csv(players_and_ids_filename)
 
     # Test different lambda values
     lambdas = [0.01, 0.05, 0.1]
+    folds = 5
 
     # Calculate the RAPM values
-    calculate_rapm(possessions, player_names_and_ids, 5, lambdas, 'Data/rapm.csv')
+    calculate_rapm(possessions, player_names_and_ids, folds, lambdas, rapm_filename.format('2023-24', 'Regular Season'))
