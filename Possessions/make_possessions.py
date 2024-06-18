@@ -299,4 +299,4 @@ if __name__ == '__main__':
     players_at_period_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
     possessions_filename = '../Data/Possessions/possessions_{}.csv'
     get_possessions_seasons(seasons, season_types, schedule_filename, play_by_play_filename,
-                            players_at_period_filename, possessions_filename, 'failed_possessions')
+                            players_at_period_filename, possessions_filename, 'Fails/failed_possessions.pkl')
