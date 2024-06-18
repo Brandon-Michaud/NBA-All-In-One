@@ -84,6 +84,29 @@ def combine_multiple_season_possessions(seasons, season_types, schedule_filename
                                        season_possessions_filename)
 
 
+# Combine all possessions for all seasons
+def combine_all_seasons_possessions(seasons, season_types, season_possessions_filename, all_possessions_filename):
+    # Loop over seasons and regular season/playoffs
+    all_possessions = []
+    for season in seasons:
+        for season_type in season_types:
+            # Load possessions for this season
+            possessions = pd.read_csv(season_possessions_filename.format(season, season_type))
+
+            # Add columns for the season and season type
+            possessions['season'] = season
+            possessions['season_type'] = season_type
+
+            # Add this season's possessions to list of all seasons
+            all_possessions.append(possessions)
+
+    # Combine possessions from all seasons
+    all_possessions_df = pd.concat(all_possessions)
+
+    # Save all possessions to csv
+    all_possessions_df.to_csv(all_possessions_filename, index=False)
+
+
 if __name__ == '__main__':
     seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
@@ -91,5 +114,7 @@ if __name__ == '__main__':
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
     possessions_filename = '../Data/Possessions/possessions_{}.csv'
     season_possessions_filename = '../Data/Possessions/possessions_{}_{}.csv'
-    combine_multiple_season_possessions(seasons, season_types, schedule_filename, possessions_filename,
-                                        season_possessions_filename)
+    all_possessions_filename = '../Data/Possessions/possessions_all.csv'
+    # combine_multiple_season_possessions(seasons, season_types, schedule_filename, possessions_filename,
+    #                                     season_possessions_filename)
+    combine_all_seasons_possessions(seasons, season_types, season_possessions_filename, all_possessions_filename)
