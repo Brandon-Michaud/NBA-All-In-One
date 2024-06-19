@@ -143,20 +143,52 @@ def calculate_rapm(possessions, player_names_and_ids, folds, lambdas, save_file)
     rapms.to_csv(save_file, index=False)
 
 
+# Calculate RAPM over a custom range of seasons
+def calculate_rapm_season_range(all_possessions, start_season, end_season, player_names_and_ids, folds, lambdas, save_file):
+    # Get all possessions in season range
+    possessions_in_range = all_possessions[(all_possessions['season'] >= start_season) &
+                                           (all_possessions['season'] <= end_season)].copy()
+
+    # Calculate RAPM over custom range
+    calculate_rapm(possessions_in_range, player_names_and_ids, folds, lambdas, save_file)
+
+
+# Calculate RAPM over a custom range of dates
+def calculate_rapm_date_range(all_possessions, start_date, end_date, player_names_and_ids, folds, lambdas, save_file):
+    # Get all possessions in date range
+    possessions_in_range = all_possessions[(all_possessions['date'] >= start_date) &
+                                           (all_possessions['date'] <= end_date)].copy()
+
+    # Calculate RAPM over custom range
+    calculate_rapm(possessions_in_range, player_names_and_ids, folds, lambdas, save_file)
+
+
+# Calculate RAPM for each range of seasons
+def calculate_x_season_rapms(all_possessions, seasons, season_types, length, player_names_and_ids, folds, lambdas, save_file):
+    # Get possessions for corresponding season types
+    all_possessions = all_possessions[all_possessions['season_type'].isin(season_types)]
+
+    # Find RAPM for possessions for the current season range
+    for i in range(len(seasons) - length + 1):
+        print(f'{((i + 1) / (len(seasons) - length + 1)):.2%}: {seasons[i]} to {seasons[i + length - 1]}')
+        calculate_rapm_season_range(all_possessions, seasons[i], seasons[i + length - 1], player_names_and_ids, folds,
+                                    lambdas, save_file.format(seasons[i], seasons[i + length - 1]))
+
+
 if __name__ == '__main__':
     seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['Regular Season', 'Playoffs']
-    possessions_filename = 'Data/Possessions/possessions_{}_{}.csv'
+    season_types = ['Regular Season']
+    all_possessions_filename = 'Data/Possessions/possessions_all.csv'
     players_and_ids_filename = 'Data/players_and_ids.csv'
     rapm_filename = 'Data/RAPM/rapm_{}_{}.csv'
 
-    possessions = pd.read_csv(possessions_filename.format('2023-24', 'Regular Season'))
+    all_possessions = pd.read_csv(all_possessions_filename)
     player_names_and_ids = pd.read_csv(players_and_ids_filename)
 
     # Test different lambda values
     lambdas = [0.01, 0.05, 0.1]
     folds = 5
 
-    # Calculate the RAPM values
-    calculate_rapm(possessions, player_names_and_ids, folds, lambdas, rapm_filename.format('2023-24', 'Regular Season'))
+    calculate_x_season_rapms(all_possessions, seasons, season_types, 5, player_names_and_ids, folds, lambdas,
+                             'Data/RAPM/FiveSeasons/rapm_regular_season_{}_{}.csv')
