@@ -117,21 +117,22 @@ if __name__ == '__main__':
     whole_season_save_filename = '../Data/SeasonStats/Tracking/{}/{}_{}.csv'
     single_day_save_filename = '../Data/BoxScores/Tracking/{}/{}_{}_{}.csv'
     # get_tracking_stats_every_day(seasons, season_types, schedule_filename, single_day_save_filename, 'Fails/failed_dates.pkl')
-    get_tracking_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/tracking.pkl')
+    # get_tracking_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/tracking.pkl')
 
-    # with open('Fails/tracking.pkl', 'rb') as fp:
-    #     fails = pickle.load(fp)
-    #     keys = list(fails.keys())
-    #     for key in keys:
-    #         key_split = key.split(' ')
-    #         season = key_split[0]
-    #         if len(key_split) == 4:
-    #             season_type = f'{key_split[1]} {key_split[2]}'
-    #             track_type = key_split[3]
-    #         else:
-    #             season_type = key_split[1]
-    #             track_type = key_split[2]
-    #         get_tracking_stats_whole_season(season, season_type, track_type, whole_season_save_filename)
+    with open('Fails/tracking.pkl', 'rb') as fp:
+        fails = pickle.load(fp)
+        keys = list(fails.keys())
+        for key in keys:
+            print(key)
+            key_split = key.split(' ')
+            season = key_split[0]
+            if len(key_split) == 4:
+                season_type = f'{key_split[1]} {key_split[2]}'
+                track_type = key_split[3]
+            else:
+                season_type = key_split[1]
+                track_type = key_split[2]
+            get_tracking_stats_whole_season(season, season_type, track_type, whole_season_save_filename)
 
 
     # if track_type == 'CatchShoot':

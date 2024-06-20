@@ -136,6 +136,7 @@ if __name__ == '__main__':
     #     fails = pickle.load(fp)
     #     keys = list(fails.keys())
     #     for key in keys:
+    #         print(key)
     #         key_split = key.split(' ')
     #         season = key_split[0]
     #         if len(key_split) == 6:

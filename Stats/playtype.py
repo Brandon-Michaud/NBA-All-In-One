@@ -144,22 +144,23 @@ if __name__ == '__main__':
     # for play_type in play_types:
     #     os.makedirs(f'../Data/SeasonStats/PlayTypes/{play_type}', exist_ok=True)
     #     os.makedirs(f'../Data/BoxScores/PlayTypes/{play_type}', exist_ok=True)
-    # get_playtype_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/playtype.pkl')
-    combine_multi_team_players_seasons(seasons, season_types, whole_season_save_filename)
+    get_playtype_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/playtype.pkl')
+    # combine_multi_team_players_seasons(seasons, season_types, whole_season_save_filename)
 
-    # with open('Fails/general.pkl', 'rb') as fp:
+    # with open('Fails/playtype.pkl', 'rb') as fp:
     #     fails = pickle.load(fp)
     #     keys = list(fails.keys())
     #     for key in keys:
+    #         print(key)
     #         key_split = key.split(' ')
     #         season = key_split[0]
-    #         if len(key_split) == 4:
+    #         if len(key_split) == 5:
     #             season_type = f'{key_split[1]} {key_split[2]}'
-    #             track_type = key_split[3]
+    #             play_type = key_split[3]
+    #             off_def = key_split[4]
     #         else:
     #             season_type = key_split[1]
-    #             track_type = key_split[2]
+    #             play_type = key_split[2]
+    #             off_def = key_split[3]
     #
-    #         if track_type != 'Opponent':
-    #             print(key)
-    #             get_general_stats_whole_season(season, season_type, track_type, whole_season_save_filename)
+    #         get_playtype_stats_whole_season(season, season_type, play_type, off_def, whole_season_save_filename)
