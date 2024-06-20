@@ -16,7 +16,7 @@ defenses = [True, False, True, True, True, True, True, False, True, False, False
 # Get play type stats for an entire season
 def get_playtype_stats_whole_season(season, season_type, play_type, off_def, save_filename):
     # Format play type stats URL to get stats for season
-    url = playtype_url.format(per_mode='PerGame',
+    url = playtype_url.format(per_mode='Totals',
                               play_type=play_type,
                               season=season,
                               season_type=season_type,

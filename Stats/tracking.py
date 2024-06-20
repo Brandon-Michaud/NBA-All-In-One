@@ -65,7 +65,7 @@ def get_tracking_stats_whole_season(season, season_type, track_type, save_filena
     # Format tracking stats URL to get stats for season
     url = track_url.format(start_date='',
                            end_date='',
-                           per_mode='PerGame',
+                           per_mode='Totals',
                            track_type=track_type,
                            season=season,
                            season_type=season_type)

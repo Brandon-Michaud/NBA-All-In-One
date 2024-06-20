@@ -63,7 +63,7 @@ def get_general_stats_whole_season(season, season_type, measure_type, save_filen
     # Format general stats URL to get stats for season
     url = general_url.format(start_date='',
                              end_date='',
-                             per_mode='PerGame',
+                             per_mode='Totals',
                              measure_type=measure_type,
                              season=season,
                              season_type=season_type)

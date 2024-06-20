@@ -72,7 +72,7 @@ def get_shooting_stats_whole_season(season, season_type, distance_range, measure
     # Format shooting stats URL to get stats for season
     url = shooting_url.format(start_date='',
                               end_date='',
-                              per_mode='PerGame',
+                              per_mode='Totals',
                               distance_range=distance_range,
                               measure_type=measure_type,
                               season=season,

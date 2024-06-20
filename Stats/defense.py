@@ -65,7 +65,7 @@ def get_defense_stats_whole_season(season, season_type, defense_category, save_f
     # Format defense stats URL to get stats for season
     url = defense_url.format(start_date='',
                              end_date='',
-                             per_mode='PerGame',
+                             per_mode='Totals',
                              defense_category=defense_category,
                              season=season,
                              season_type=season_type)
