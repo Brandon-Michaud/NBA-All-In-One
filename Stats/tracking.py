@@ -30,12 +30,42 @@ def get_tracking_stats_single_day(date, season, season_type, track_type, save_fi
     time.sleep(0.75)
 
 
+# Get tracking stats day-by-day for multiple seasons
+def get_tracking_stats_every_day(seasons, season_types, schedule_filename, save_filename, fail_filename):
+    failed_dates = {}
+    for season in seasons:
+        for season_type in season_types:
+            # Read schedule
+            schedule = pd.read_csv(schedule_filename.format(season, season_type), dtype=str)
+
+            # Extract the dates from the schedule
+            dates = schedule['GAME_DATE'].unique()
+            n_dates = len(dates)
+            n_types = len(track_types)
+
+            # Get tracking stats for each day in schedule
+            for i, date in enumerate(dates):
+                for j, track_type in enumerate(track_types):
+                    print(
+                        f'{((i * n_types + j) / (n_dates * n_types)):.2%} {season} {season_type}: {date} {track_type}')
+                    try:
+                        get_tracking_stats_single_day(date, season, season_type, track_type, save_filename)
+                    except Exception as error:
+                        print(error)
+                        traceback.print_exc()
+                        failed_dates[date] = str(error), traceback.format_exc()
+
+        # Save failed dates
+        with open(fail_filename, 'wb') as fp:
+            pickle.dump(failed_dates, fp)
+
+
 # Get tracking stats for an entire season
-def get_tracking_stats_whole_seasons(season, season_type, track_type, save_filename):
-    # Format tracking stats URL to get stats for date
+def get_tracking_stats_whole_season(season, season_type, track_type, save_filename):
+    # Format tracking stats URL to get stats for season
     url = track_url.format(start_date='',
                            end_date='',
-                           per_mode='Totals',
+                           per_mode='PerGame',
                            track_type=track_type,
                            season=season,
                            season_type=season_type)
@@ -68,56 +98,41 @@ def get_tracking_stats_seasons(seasons, season_types, save_filename, fail_filena
 
                 # Get tracking stats
                 try:
-                    get_tracking_stats_whole_seasons(season, season_type, track_type, save_filename)
+                    get_tracking_stats_whole_season(season, season_type, track_type, save_filename)
                 except Exception as error:
                     print(error)
                     traceback.print_exc()
                     failed_seasons[f'{season} {season_type} {track_type}'] = str(error), traceback.format_exc()
 
-    # Save failed dates
+    # Save failed seasons
     with open(fail_filename, 'wb') as fp:
         pickle.dump(failed_seasons, fp)
-
-
-# Get tracking stats day-by-day for multiple seasons
-def get_tracking_stats_every_day(seasons, season_types, schedule_filename, save_filename, fail_filename):
-    failed_dates = {}
-    for season in seasons:
-        for season_type in season_types:
-            # Read schedule
-            schedule = pd.read_csv(schedule_filename.format(season, season_type), dtype=str)
-
-            # Extract the dates from the schedule
-            dates = schedule['GAME_DATE'].unique()
-            n_dates = len(dates)
-            n_types = len(track_types)
-
-            # Get tracking stats for each day in schedule
-            for i, date in enumerate(dates):
-                for j, track_type in enumerate(track_types):
-                    print(
-                        f'{((i * n_types + j) / (n_dates * n_types)):.2%} {season} {season_type}: {date} {track_type}')
-                    try:
-                        get_tracking_stats_single_day(date, season, season_type, track_type, save_filename)
-                    except Exception as error:
-                        print(error)
-                        traceback.print_exc()
-                        failed_dates[date] = str(error), traceback.format_exc()
-
-        # Save failed dates
-        with open(fail_filename, 'wb') as fp:
-            pickle.dump(failed_dates, fp)
 
 
 if __name__ == '__main__':
     seasons = range(2013, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['Regular Season']
+    season_types = ['Regular Season', 'Playoffs']
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
-    whole_season_save_filename = '../Data/BoxScores/Tracking/{}/{}_{}.csv'
+    whole_season_save_filename = '../Data/SeasonStats/Tracking/{}/{}_{}.csv'
     single_day_save_filename = '../Data/BoxScores/Tracking/{}/{}_{}_{}.csv'
-    # get_tracking_stats_every_day(seasons, season_types, schedule_filename, single_day_save_filename, 'failed_dates.pkl')
-    get_tracking_stats_seasons(seasons, season_types, whole_season_save_filename, 'failed_seasons.pkl')
+    # get_tracking_stats_every_day(seasons, season_types, schedule_filename, single_day_save_filename, 'Fails/failed_dates.pkl')
+    get_tracking_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/tracking.pkl')
+
+    # with open('Fails/tracking.pkl', 'rb') as fp:
+    #     fails = pickle.load(fp)
+    #     keys = list(fails.keys())
+    #     for key in keys:
+    #         key_split = key.split(' ')
+    #         season = key_split[0]
+    #         if len(key_split) == 4:
+    #             season_type = f'{key_split[1]} {key_split[2]}'
+    #             track_type = key_split[3]
+    #         else:
+    #             season_type = key_split[1]
+    #             track_type = key_split[2]
+    #         get_tracking_stats_whole_season(season, season_type, track_type, whole_season_save_filename)
+
 
     # if track_type == 'CatchShoot':
     #     print()
