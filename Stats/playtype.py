@@ -72,13 +72,35 @@ def get_playtype_stats_seasons(seasons, season_types, save_filename, fail_filena
         pickle.dump(failed_seasons, fp)
 
 
-# Combine players who played for more than one team
-def combine_multi_team_players(seasons, season_types, save_filename):
+# Combine players who played for more than one team for a single dataframe
+def combine_multi_team_players(df):
     # Define columns that will be used for weighted average
-    games_played = 'GP'
     weighted_columns = ['PERCENTILE', 'POSS_PCT', 'PPP', 'FG_PCT', 'FT_POSS_PCT', 'TOV_POSS_PCT', 'SF_POSS_PCT',
                         'PLUSONE_POSS_PCT', 'SCORE_POSS_PCT', 'EFG_PCT', 'POSS', 'PTS', 'FGM', 'FGA', 'FGMX']
 
+    # Calculate the total number of games played by each player in the season
+    df['TOTAL_GP'] = df.groupby(['PLAYER_ID'])['GP'].transform('sum')
+
+    # Computed weighted sum by games played for numerical columns
+    for weighted_column in weighted_columns:
+        df[f'WEIGHTED_{weighted_column}'] = df[weighted_column] * df['GP'] / df['TOTAL_GP']
+
+    # Group by player and sum the weighted columns
+    df_no_duplicates = df.groupby(['PLAYER_ID', 'PLAYER_NAME']).agg(
+        TEAM_ID=('TEAM_ID', 'last'),
+        TEAM_ABBREVIATION=('TEAM_ABBREVIATION', 'last'),
+        TEAM_NAME=('TEAM_NAME', 'last'),
+        PLAY_TYPE=('PLAY_TYPE', 'first'),
+        TYPE_GROUPING=('TYPE_GROUPING', 'first'),
+        TOTAL__GP=('GP', 'sum'),
+        **{f'{column}': (f'WEIGHTED_{column}', 'sum') for column in weighted_columns}
+    ).reset_index()
+
+    return df_no_duplicates
+
+
+# Combine players who played for more than one team for every season
+def combine_multi_team_players_seasons(seasons, season_types, save_filename):
     # Constants for finding completion percentage
     n_seasons = len(seasons)
     n_season_types = len(season_types)
@@ -96,47 +118,18 @@ def combine_multi_team_players(seasons, season_types, save_filename):
                 # Load offensive play type stats
                 o_playtype_stats = pd.read_csv(save_filename.format(play_type, season, season_type, 'offensive'))
 
-                # Calculate the total number of games played by each player in the season
-                o_playtype_stats['TOTAL_GP'] = o_playtype_stats.groupby(['PLAYER_ID'])['GP'].transform('sum')
-
-                # Computed weighted sum by games played for numerical columns
-                for weighted_column in weighted_columns:
-                    o_playtype_stats[f'WEIGHTED_{weighted_column}'] = (o_playtype_stats[weighted_column] * o_playtype_stats['GP'] / o_playtype_stats['TOTAL_GP'])
-
                 # Group by player and sum the weighted columns
-                o_no_duplicates = o_playtype_stats.groupby(['PLAYER_ID', 'PLAYER_NAME']).agg(
-                    TEAM_ID=('TEAM_ID', 'last'),
-                    TEAM_ABBREVIATION=('TEAM_ABBREVIATION', 'last'),
-                    TEAM_NAME=('TEAM_NAME', 'last'),
-                    PLAY_TYPE=('PLAY_TYPE', 'first'),
-                    TYPE_GROUPING=('TYPE_GROUPING', 'first'),
-                    TOTAL__GP=('GP', 'sum'),
-                    **{f'{column}': (f'WEIGHTED_{column}', 'sum') for column in weighted_columns}
-                ).reset_index()
+                o_no_duplicates = combine_multi_team_players(o_playtype_stats)
 
                 # Save data without duplicates
                 o_no_duplicates.to_csv(save_filename.format(play_type, season, season_type, 'offensive'), index=False)
 
                 if defense:
+                    # Load defense play type stats
                     d_playtype_stats = pd.read_csv(save_filename.format(play_type, season, season_type, 'defensive'))
 
-                    # Calculate the total number of games played by each player in the season
-                    d_playtype_stats['TOTAL_GP'] = d_playtype_stats.groupby(['PLAYER_ID'])['GP'].transform('sum')
-
-                    # Computed weighted sum by games played for numerical columns
-                    for weighted_column in weighted_columns:
-                        d_playtype_stats[f'WEIGHTED_{weighted_column}'] = (d_playtype_stats[weighted_column] * d_playtype_stats['GP'] / d_playtype_stats['TOTAL_GP'])
-
                     # Group by player and sum the weighted columns
-                    d_no_duplicates = d_playtype_stats.groupby(['PLAYER_ID', 'PLAYER_NAME']).agg(
-                        TEAM_ID=('TEAM_ID', 'last'),
-                        TEAM_ABBREVIATION=('TEAM_ABBREVIATION', 'last'),
-                        TEAM_NAME=('TEAM_NAME', 'last'),
-                        PLAY_TYPE=('PLAY_TYPE', 'first'),
-                        TYPE_GROUPING=('TYPE_GROUPING', 'first'),
-                        TOTAL__GP=('GP', 'sum'),
-                        **{f'{column}': (f'WEIGHTED_{column}', 'sum') for column in weighted_columns}
-                    ).reset_index()
+                    d_no_duplicates = combine_multi_team_players(d_playtype_stats)
 
                     # Save data without duplicates
                     d_no_duplicates.to_csv(save_filename.format(play_type, season, season_type, 'defensive'), index=False)
@@ -152,7 +145,7 @@ if __name__ == '__main__':
     #     os.makedirs(f'../Data/SeasonStats/PlayTypes/{play_type}', exist_ok=True)
     #     os.makedirs(f'../Data/BoxScores/PlayTypes/{play_type}', exist_ok=True)
     # get_playtype_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/playtype.pkl')
-    combine_multi_team_players(seasons, season_types, whole_season_save_filename)
+    combine_multi_team_players_seasons(seasons, season_types, whole_season_save_filename)
 
     # with open('Fails/general.pkl', 'rb') as fp:
     #     fails = pickle.load(fp)
