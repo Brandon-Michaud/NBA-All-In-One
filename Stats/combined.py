@@ -3,7 +3,7 @@ from tracking import track_types
 from general import measure_types as general_measure_types
 from playtype import play_types, defenses as play_type_defenses
 from defense import defense_categories
-from shooting import distance_ranges, measure_types as shooting_measure_types
+from shooting import distance_ranges
 
 
 column_names_maps = {
