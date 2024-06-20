@@ -263,6 +263,128 @@ column_names_maps = {
     },
 }
 
+rate_adjusted_columns = {
+    'Box Outs': ['O_BOX_OUTS', 'D_BOX_OUTS', 'BOX_OUT_TEAM_REBS', 'BOX_OUT_REBS', 'BOX_OUTS'],
+    'Defense': {
+        '2 Pointers': ['D_FG2M', 'D_FG2A'],
+        '3 Pointers': ['D_FG3M', 'D_FG3A'],
+        'Greater Than 15Ft': ['D_FGM_GT_15', 'D_FGA_GT_15'],
+        'Less Than 6Ft': ['D_FGM_LT_06', 'D_FGA_LT_06'],
+        'Less Than 10Ft': ['D_FGM_LT_10', 'D_FGA_LT_10'],
+        'Overall': ['D_FGM', 'D_FGA'],
+    },
+    'General': {
+        'Advanced': [],
+        'Base': ['MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK',
+                 'BLKA', 'PF', 'PFD', 'PTS'],
+        'Defense': [],
+        'Misc': ['PTS_OFF_TOV', 'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT', 'OPP_PTS_OFF_TOV', 'OPP_PTS_2ND_CHANCE',
+                 'OPP_PTS_FB', 'OPP_PTS_PAINT'],
+        'Scoring': [],
+        'Usage': [],
+    },
+    'Hustle': ['CONTESTED_SHOTS', 'CONTESTED_SHOTS_2PT', 'CONTESTED_SHOTS_3PT', 'DEFLECTIONS', 'CHARGES_DRAWN',
+               'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'O_LOOSE_BALLS_RECOVERED', 'D_LOOSE_BALLS_RECOVERED',
+               'LOOSE_BALLS_RECOVERED'],
+    'Play Types': {
+        'Cut': {
+            'offensive': ['O_CUT_POSS', 'O_CUT_PTS', 'O_CUT_FGM', 'O_CUT_FGA', 'O_CUT_FGMX'],
+            'defensive': [],
+        },
+        'Handoff': {
+            'offensive': ['O_HANDOFF_POSS', 'O_HANDOFF_PTS', 'O_HANDOFF_FGM', 'O_HANDOFF_FGA', 'O_HANDOFF_FGMX'],
+            'defensive': ['D_HANDOFF_POSS', 'D_HANDOFF_PTS', 'D_HANDOFF_FGM', 'D_HANDOFF_FGA', 'D_HANDOFF_FGMX'],
+        },
+        'Isolation': {
+            'offensive': ['O_ISO_POSS', 'O_ISO_PTS', 'O_ISO_FGM', 'O_ISO_FGA', 'O_ISO_FGMX'],
+            'defensive': ['D_ISO_POSS', 'D_ISO_PTS', 'D_ISO_FGM', 'D_ISO_FGA', 'D_ISO_FGMX'],
+        },
+        'Misc': {
+            'offensive': ['O_MISC_POSS', 'O_MISC_PTS', 'O_MISC_FGM', 'O_MISC_FGA', 'O_MISC_FGMX'],
+            'defensive': [],
+        },
+        'OffRebound': {
+            'offensive': ['O_OFFREB_POSS', 'O_OFFREB_PTS', 'O_OFFREB_FGM', 'O_OFFREB_FGA', 'O_OFFREB_FGMX'],
+            'defensive': [],
+        },
+        'OffScreen': {
+            'offensive': ['O_OFFSCREEN_POSS', 'O_OFFSCREEN_PTS', 'O_OFFSCREEN_FGM', 'O_OFFSCREEN_FGA',
+                          'O_OFFSCREEN_FGMX'],
+            'defensive': ['D_OFFSCREEN_POSS', 'D_OFFSCREEN_PTS', 'D_OFFSCREEN_FGM', 'D_OFFSCREEN_FGA',
+                          'D_OFFSCREEN_FGMX'],
+        },
+        'Postup': {
+            'offensive': ['O_POSTUP_POSS', 'O_POSTUP_PTS', 'O_POSTUP_FGM', 'O_POSTUP_FGA', 'O_POSTUP_FGMX'],
+            'defensive': ['D_POSTUP_POSS', 'D_POSTUP_PTS', 'D_POSTUP_FGM', 'D_POSTUP_FGA', 'D_POSTUP_FGMX'],
+        },
+        'PRBallHandler': {
+            'offensive': ['O_PRBH_POSS', 'O_PRBH_PTS', 'O_PRBH_FGM', 'O_PRBH_FGA', 'O_PRBH_FGMX'],
+            'defensive': ['D_PRBH_POSS', 'D_PRBH_PTS', 'D_PRBH_FGM', 'D_PRBH_FGA', 'D_PRBH_FGMX'],
+        },
+        'PRRollman': {
+            'offensive': ['O_PRRM_POSS', 'O_PRRM_PTS', 'O_PRRM_FGM', 'O_PRRM_FGA', 'O_PRRM_FGMX'],
+            'defensive': ['D_PRRM_POSS', 'D_PRRM_PTS', 'D_PRRM_FGM', 'D_PRRM_FGA', 'D_PRRM_FGMX'],
+        },
+        'Spotup': {
+            'offensive': ['O_SPOTUP_POSS', 'O_SPOTUP_PTS', 'O_SPOTUP_FGM', 'O_SPOTUP_FGA', 'O_SPOTUP_FGMX'],
+            'defensive': ['D_SPOTUP_POSS', 'D_SPOTUP_PTS', 'D_SPOTUP_FGM', 'D_SPOTUP_FGA', 'D_SPOTUP_FGMX'],
+        },
+        'Transition': {
+            'offensive': ['O_TRANS_POSS', 'O_TRANS_PTS', 'O_TRANS_FGM', 'O_TRANS_FGA', 'O_TRANS_FGMX'],
+            'defensive': [],
+        },
+    },
+    'Shooting': {
+        '5ft Range': {
+            'offensive': ['O_FGM_LT_05', 'O_FGA_LT_05', 'O_FGM_LT_10_GT_05', 'O_FGA_LT_10_GT_05', 'O_FGM_LT_15_GT_10',
+                          'O_FGA_LT_15_GT_10', 'O_FGM_LT_20_GT_15', 'O_FGA_LT_20_GT_15', 'O_FGM_LT_25_GT_20',
+                          'O_FGA_LT_25_GT_20', 'O_FGM_LT_30_GT_25', 'O_FGA_LT_30_GT_25', 'O_FGM_LT_35_GT_30',
+                          'O_FGA_LT_35_GT_30', 'O_FGM_LT_40_GT_35', 'O_FGA_LT_40_GT_35', 'O_FGM_GT_40', 'O_FGA_GT_40'],
+            'defensive': ['D_FGM_LT_05', 'D_FGA_LT_05', 'D_FGM_LT_10_GT_05', 'D_FGA_LT_10_GT_05', 'D_FGM_LT_15_GT_10',
+                          'D_FGA_LT_15_GT_10', 'D_FGM_LT_20_GT_15', 'D_FGA_LT_20_GT_15', 'D_FGM_LT_25_GT_20',
+                          'D_FGA_LT_25_GT_20', 'D_FGM_LT_30_GT_25', 'D_FGA_LT_30_GT_25', 'D_FGM_LT_35_GT_30',
+                          'D_FGA_LT_35_GT_30', 'D_FGM_LT_40_GT_35', 'D_FGA_LT_40_GT_35', 'D_FGM_GT_40', 'D_FGA_GT_40'],
+        },
+        '8ft Range': {
+            'offensive': ['O_FGM_LT_08', 'O_FGA_LT_08', 'O_FGM_LT_16_GT_08', 'O_FGA_LT_16_GT_08', 'O_FGM_LT_24_GT_16',
+                          'O_FGA_LT_24_GT_16', 'O_FGM_GT_24', 'O_FGA_GT_24'],
+            'defensive': ['D_FGM_LT_08', 'D_FGA_LT_08', 'D_FGM_LT_16_GT_08', 'D_FGA_LT_16_GT_08', 'D_FGM_LT_24_GT_16',
+                          'D_FGA_LT_24_GT_16', 'D_FGM_GT_24', 'D_FGA_GT_24'],
+        },
+        'By Zone': {
+            'offensive': ['O_FGM_RA', 'O_FGA_RA', 'O_FGM_PAINT_NRA', 'O_FGA_PAINT_NRA', 'O_FGM_MR', 'O_FGA_MR',
+                          'O_FGM_LC3', 'O_FGA_LC3', 'O_FGM_RC3', 'O_FGA_RC3', 'O_FGM_AB3', 'O_FGA_AB3', 'O_FGM_BC',
+                          'O_FGA_BC', 'O_FGM_C3', 'O_FGA_C3'],
+            'defensive': ['D_FGM_RA', 'D_FGA_RA', 'D_FGM_PAINT_NRA', 'D_FGA_PAINT_NRA', 'D_FGM_MR', 'D_FGA_MR',
+                          'D_FGM_LC3', 'D_FGA_LC3', 'D_FGM_RC3', 'D_FGA_RC3', 'D_FGM_AB3', 'D_FGA_AB3', 'D_FGM_BC',
+                          'D_FGA_BC', 'D_FGM_C3', 'D_FGA_C3'],
+        },
+    },
+    'Tracking': {
+        'CatchShoot': ['CATCH_SHOOT_FGM', 'CATCH_SHOOT_FGA', 'CATCH_SHOOT_PTS', 'CATCH_SHOOT_FG3M', 'CATCH_SHOOT_FG3A'],
+        'Defense': ['D_RIM_FGM', 'D_RIM_FGA'],
+        'Drives': ['DRIVES', 'DRIVE_FGM', 'DRIVE_FGA', 'DRIVE_FTM', 'DRIVE_FTA', 'DRIVE_PTS', 'DRIVE_PASSES',
+                   'DRIVE_AST', 'DRIVE_TOV', 'DRIVE_PF'],
+        'Efficiency': [],
+        'ElbowTouch': ['ELBOW_TOUCHES', 'ELBOW_TOUCH_FGM', 'ELBOW_TOUCH_FGA', 'ELBOW_TOUCH_FTM', 'ELBOW_TOUCH_FTA',
+                       'ELBOW_TOUCH_PTS', 'ELBOW_TOUCH_PASSES', 'ELBOW_TOUCH_AST', 'ELBOW_TOUCH_TOV',
+                       'ELBOW_TOUCH_FOULS'],
+        'PaintTouch': ['PAINT_TOUCHES', 'PAINT_TOUCH_FGM', 'PAINT_TOUCH_FGA', 'PAINT_TOUCH_FTM', 'PAINT_TOUCH_FTA',
+                       'PAINT_TOUCH_PTS', 'PAINT_TOUCH_PASSES', 'PAINT_TOUCH_AST', 'PAINT_TOUCH_TOV',
+                       'PAINT_TOUCH_FOULS'],
+        'Passing': ['PASSES_MADE', 'PASSES_RECEIVED', 'FT_AST', 'SECONDARY_AST', 'POTENTIAL_AST', 'AST_PTS_CREATED',
+                    'AST_ADJ'],
+        'Possessions': ['TOUCHES', 'FRONT_CT_TOUCHES'],
+        'PostTouch': ['POST_TOUCHES', 'POST_TOUCH_FGM', 'POST_TOUCH_FGA', 'POST_TOUCH_FTM', 'POST_TOUCH_FTA',
+                      'POST_TOUCH_PTS', 'POST_TOUCH_PASSES', 'POST_TOUCH_AST', 'POST_TOUCH_TOV', 'POST_TOUCH_FOULS'],
+        'PullUpShot': ['PULL_UP_FGM', 'PULL_UP_FGA', 'PULL_UP_PTS', 'PULL_UP_FG3M', 'PULL_UP_FG3A'],
+        'Rebounding': ['OREB_CONTEST', 'OREB_UNCONTEST', 'OREB_CHANCES', 'OREB_CHANCE_DEFER',
+                       'DREB_CONTEST', 'DREB_UNCONTEST', 'DREB_CHANCES', 'DREB_CHANCE_DEFER',
+                       'REB_CONTEST', 'REB_UNCONTEST', 'REB_CHANCES', 'REB_CHANCE_DEFER'],
+        'SpeedDistance': ['DIST_FEET', 'DIST_MILES', 'DIST_MILES_O', 'DIST_MILES_D'],
+    },
+}
+
 
 # Get the availability of stats based on the season
 def get_availability(season):
@@ -413,9 +535,95 @@ def combine_stats_seasons(seasons, season_types, save_filename):
             combine_single_season_stats(season, season_type, save_filename)
 
 
+# Adjust columns for rate for a single season
+def adjust_for_rate_single_season(season, season_type, totals_save_filename, rate_adjusted_save_filename, rate_column,
+                                  rate_factor):
+    # Get stats totals for this season
+    stats = pd.read_csv(totals_save_filename.format(season, season_type))
+
+    # Get availability of stats
+    availability = get_availability(season)
+
+    # Get each available stat type
+    stat_types = list(availability.keys())
+
+    # Merge all stats together for this season
+    for stat_type in stat_types:
+        if availability[stat_type]:
+            # Get box outs and hustle stats
+            if stat_type == 'Box Outs' or stat_type == 'Hustle':
+                columns_to_adjust = rate_adjusted_columns[stat_type]
+                stats[columns_to_adjust] = (stats[columns_to_adjust]
+                                            .apply(lambda x: x / (stats[rate_column] * rate_factor), axis=0))
+
+            # Get defensive stats
+            elif stat_type == 'Defense':
+                for defense_category in defense_categories:
+                    columns_to_adjust = rate_adjusted_columns[stat_type][defense_category]
+                    stats[columns_to_adjust] = (stats[columns_to_adjust]
+                                                .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+
+            # Get general stats
+            elif stat_type == 'General':
+                for general_measure_type in general_measure_types:
+                    columns_to_adjust = rate_adjusted_columns[stat_type][general_measure_type]
+                    stats[columns_to_adjust] = (stats[columns_to_adjust]
+                                                .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+
+            # Get play type stats
+            elif stat_type == 'Play Types':
+                for play_type, defense in zip(play_types, play_type_defenses):
+                    o_columns_to_adjust = rate_adjusted_columns[stat_type][play_type]['offensive']
+                    stats[o_columns_to_adjust] = (stats[o_columns_to_adjust]
+                                                  .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+                    if defense:
+                        d_columns_to_adjust = rate_adjusted_columns[stat_type][play_type]['defensive']
+                        stats[d_columns_to_adjust] = (stats[d_columns_to_adjust]
+                                                      .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+
+            # Get shooting stats
+            elif stat_type == 'Shooting':
+                for distance_range in distance_ranges:
+                    o_columns_to_adjust = rate_adjusted_columns[stat_type][distance_range]['offensive']
+                    stats[o_columns_to_adjust] = (stats[o_columns_to_adjust]
+                                                  .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+
+                    d_columns_to_adjust = rate_adjusted_columns[stat_type][distance_range]['defensive']
+                    stats[d_columns_to_adjust] = (stats[d_columns_to_adjust]
+                                                  .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+
+            # Get tracking stats
+            elif stat_type == 'Tracking':
+                for track_type in track_types:
+                    columns_to_adjust = rate_adjusted_columns[stat_type][track_type]
+                    stats[columns_to_adjust] = (stats[columns_to_adjust]
+                                                .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
+
+    # Save rate adjusted stats to csv file
+    stats.to_csv(rate_adjusted_save_filename.format(season, season_type), index=False)
+
+
+# Adjust columns for rate for every season
+def adjust_for_rate_seasons(seasons, season_types, totals_save_filename, rate_adjusted_save_filename, rate_column,
+                            rate_factor):
+    # Adjust columns for rate for every season
+    n_seasons = len(seasons)
+    n_season_types = len(season_types)
+    for i, season in enumerate(seasons):
+        for j, season_type in enumerate(season_types):
+            percent_done = ((i * n_season_types + j) /(n_seasons * n_season_types))
+            print(f'{percent_done:.2%} {season} {season_type}')
+
+            # Adjust colums for rate for this season
+            adjust_for_rate_single_season(season, season_type, totals_save_filename, rate_adjusted_save_filename,
+                                          rate_column, rate_factor)
+
+
 if __name__ == '__main__':
     seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season', 'Playoffs']
-    save_filename = '../Data/SeasonStats/Combined/{}_{}.csv'
-    combine_stats_seasons(seasons, season_types, save_filename)
+    totals_save_filename = '../Data/SeasonStats/Combined/Totals/{}_{}.csv'
+    rate_adjusted_save_filename = '../Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
+    # combine_stats_seasons(seasons, season_types, totals_save_filename)
+    adjust_for_rate_seasons(seasons, season_types, totals_save_filename, rate_adjusted_save_filename, 'POSS', 100)
