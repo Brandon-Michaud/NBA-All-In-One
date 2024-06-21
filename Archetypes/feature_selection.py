@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import pickle
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
@@ -154,6 +153,8 @@ def combine_seasons(seasons, season_types, stats_filename, min_gp, min_mpg):
         for j, season_type in enumerate(season_types):
             # Get stats for this season
             stats = load_single_season_stats(season, season_type, stats_filename, min_gp, min_mpg)
+            stats['SEASON'] = season
+            stats['SEASON_TYPE'] = season_type
 
             # Add standardized stats to list of stats for every season
             combined.append(stats)
@@ -282,28 +283,40 @@ def find_redundant_columns_vif(data, threshold, already_chosen=None, one_by_one=
             pickle.dump(chosen_features, fp)
 
 
+# Get available chosen columns
+def get_available_chosen_columns(season, chosen_inputs):
+    # Get manual input features available
+    manual_inputs = get_input_features(season)
+
+    # Only use chosen features if they are available
+    input_features = []
+    for input_feature in chosen_inputs:
+        if input_feature in manual_inputs:
+            input_features.append(input_feature)
+
+    return input_features
+
+
 if __name__ == '__main__':
-    seasons = range(2017, 2024)
+    seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['Regular Season']
+    season_types = ['Regular Season', 'Playoffs']
     save_filename = '../Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
 
     # Get combined stats for every season
     stats = combine_seasons(seasons, season_types, save_filename, 10, 12)
+    stats.to_csv('../Data/SeasonStats/Combined/all_seasons_standardized.csv', index=False)
 
-    # Get manual input features
-    manual_inputs = get_input_features(seasons[0])
-    stats = stats[manual_inputs]
-
+    # Find redundant columns
+    # manual_inputs = get_input_features(seasons[0])
+    # stats = stats[manual_inputs]
     # find_redundant_columns_pearson(stats, 0.8, one_by_one=True, features_filename=f'chosen_features.pkl')
     # find_redundant_columns_vif(stats, 10, one_by_one=True, features_filename=f'chosen_features.pkl')
 
-    # Load features chosen using Pearson correlation assistance
-    with open('chosen_features.pkl', 'rb') as fp:
-        chosen_inputs = pickle.load(fp)
-
-        # Only use features if they are available
-        input_features = []
-        for input_feature in chosen_inputs:
-            if input_feature in manual_inputs:
-                input_features.append(input_feature)
+    # Load features chosen
+    # with open('chosen_features.pkl', 'rb') as fp:
+    #     chosen_inputs = pickle.load(fp)
+    #
+    #     # Only use chosen features if they are available
+    #     input_features = get_available_chosen_columns(seasons[0], chosen_inputs)
+    #     print(len(input_features))
