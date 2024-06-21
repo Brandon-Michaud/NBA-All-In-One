@@ -1,5 +1,8 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 from Stats.combined import (get_availability, track_types, general_measure_types,
                             play_types, play_type_defenses, defense_categories, distance_ranges)
@@ -9,9 +12,13 @@ from Stats.combined import (get_availability, track_types, general_measure_types
 # - No defensive (or partially defensive) stats needed
 # - Advanced stats like offensive rating do not provide much useful information about role
 # - All stats will be per 100 possessions, so no need for possessions
+# - Assist ratio is assists per 100 possessions, which we already have
 # - Role typically diminishes with age, but we want to discover this from the other stats, not age itself
 # - Games played and wins do not help identify role
-# - Field goals made can be determined from field goals attempted and field goal percentage
+# - Any stats that can be calculated directly from other stats are redundant
+#    - FGM can be found from FGA and FG%
+#    - FGM is FG2M + FG3M
+#    - Assist to turnover ratio is AST/TO
 input_columns_map = {
     'Box Outs': ['O_BOX_OUTS'],
     'Defense': {
@@ -23,7 +30,7 @@ input_columns_map = {
         'Overall': [],
     },
     'General': {
-        'Advanced': ['AST_PCT', 'AST_TO', 'AST_RATIO', 'OREB_PCT', 'TM_TOV_PCT', 'EFG_PCT', 'TS_PCT', 'USG_PCT', 'PACE'],
+        'Advanced': ['AST_PCT', 'AST_TO', 'OREB_PCT', 'TM_TOV_PCT', 'EFG_PCT', 'TS_PCT', 'USG_PCT', 'PACE'],
         'Base': ['MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM', 'FTA', 'FT_PCT', 'OREB', 'AST', 'TOV', 'PTS'],
         'Defense': [],
         'Misc': ['PTS_OFF_TOV', 'PTS_2ND_CHANCE', 'PTS_FB', 'PTS_PAINT'],
@@ -131,11 +138,11 @@ if __name__ == '__main__':
     save_filename = 'Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
 
     # Load stats and replace NA cells with zeros
-    # stats = pd.read_csv(save_filename.format('2023-24', 'Regular Season'))
-    # stats = stats.fillna(0)
-    #
-    # stats = standardize_columns(stats, ['PLAYER_ID'])
-    #
+    stats = pd.read_csv(save_filename.format('2023-24', 'Regular Season'))
+    stats = stats.fillna(0)
+
+    stats = standardize_columns(stats, ['PLAYER_ID'])
+
     # player_names_and_ids = pd.read_csv('Data/players_and_ids.csv')
     # stats = player_names_and_ids.merge(stats, on='PLAYER_ID', how='right')
     # stats.to_csv('test.csv', index=False)
@@ -181,4 +188,9 @@ if __name__ == '__main__':
                 for track_type in track_types:
                     features.extend(input_columns_map[stat_type][track_type])
 
-    print(len(features))
+    stats = stats[features]
+    correlation_matrix = stats.corr()
+    plt.figure()
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1, center=0)
+    plt.title('Pearson Correlation Heatmap')
+    plt.show()
