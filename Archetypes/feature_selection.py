@@ -1,8 +1,9 @@
 import pandas as pd
+import numpy as np
+import pickle
 from sklearn.preprocessing import StandardScaler
-import seaborn as sns
-import matplotlib.pyplot as plt
-
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from Stats.combined import (get_availability, track_types, general_measure_types,
                             play_types, play_type_defenses, defense_categories, distance_ranges)
@@ -15,11 +16,7 @@ from Stats.combined import (get_availability, track_types, general_measure_types
 # - Assist ratio is assists per 100 possessions, which we already have
 # - Role typically diminishes with age, but we want to discover this from the other stats, not age itself
 # - Games played and wins do not help identify role
-# - Any stats that can be calculated directly from other stats are redundant
-#    - FGM can be found from FGA and FG%
-#    - FGM is FG2M + FG3M
-#    - Assist to turnover ratio is AST/TO
-input_columns_map = {
+manual_inputs_map = {
     'Box Outs': ['O_BOX_OUTS'],
     'Defense': {
         '2 Pointers': [],
@@ -123,7 +120,8 @@ def standardize_columns(data, excluded_columns):
 
     # Standardize all columns except excluded columns
     scaler = StandardScaler()
-    standardized_data = pd.DataFrame(scaler.fit_transform(data_to_standardize), columns=data_to_standardize.columns)
+    standardized_data = pd.DataFrame(scaler.fit_transform(data_to_standardize), columns=data_to_standardize.columns,
+                                     index=data_to_standardize.index)
 
     # Combine the excluded columns back with the standardized columns
     data = pd.concat([excluded_columns_data, standardized_data], axis=1)
@@ -131,24 +129,45 @@ def standardize_columns(data, excluded_columns):
     return data
 
 
-if __name__ == '__main__':
-    seasons = range(1996, 2024)
-    seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['Regular Season', 'Playoffs']
-    save_filename = 'Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
+# Load a single seasons stats
+def load_single_season_stats(season, season_type, stats_filename, min_gp, min_mpg):
+    # Get stats for the season
+    stats = pd.read_csv(stats_filename.format(season, season_type))
 
-    # Load stats and replace NA cells with zeros
-    stats = pd.read_csv(save_filename.format('2023-24', 'Regular Season'))
+    # Fill missing cells with 0s. Assuming that missing data means a player did not record a single stat for the column
     stats = stats.fillna(0)
 
+    # Remove small sample sizes
+    stats = stats[(stats['GP'] >= min_gp) | ((stats['MIN'] / stats['GP']) >= min_mpg)]
+
+    # Standardize all columns except PLAYER_ID
     stats = standardize_columns(stats, ['PLAYER_ID'])
 
-    # player_names_and_ids = pd.read_csv('Data/players_and_ids.csv')
-    # stats = player_names_and_ids.merge(stats, on='PLAYER_ID', how='right')
-    # stats.to_csv('test.csv', index=False)
+    return stats
 
+
+# Combine multiple seasons of stats
+def combine_seasons(seasons, season_types, stats_filename, min_gp, min_mpg):
+    # Combine stats for each season
+    combined = []
+    for i, season in enumerate(seasons):
+        for j, season_type in enumerate(season_types):
+            # Get stats for this season
+            stats = load_single_season_stats(season, season_type, stats_filename, min_gp, min_mpg)
+
+            # Add standardized stats to list of stats for every season
+            combined.append(stats)
+
+    # Concatenate dataframes for all seasons
+    combined_df = pd.concat(combined)
+
+    return combined_df
+
+
+# Get input available input features based on the season
+def get_input_features(season):
     # Get availability of stats
-    availability = get_availability('2023-24')
+    availability = get_availability(season)
     stat_types = list(availability.keys())
 
     # Adjust all stats together for this season
@@ -157,40 +176,134 @@ if __name__ == '__main__':
         if availability[stat_type]:
             # Get box outs and hustle stats
             if stat_type == 'Box Outs' or stat_type == 'Hustle':
-                features.extend(input_columns_map[stat_type])
+                features.extend(manual_inputs_map[stat_type])
 
             # Get defensive stats
             elif stat_type == 'Defense':
                 for defense_category in defense_categories:
-                    features.extend(input_columns_map[stat_type][defense_category])
+                    features.extend(manual_inputs_map[stat_type][defense_category])
 
             # Get general stats
             elif stat_type == 'General':
                 for general_measure_type in general_measure_types:
-                    features.extend(input_columns_map[stat_type][general_measure_type])
+                    features.extend(manual_inputs_map[stat_type][general_measure_type])
 
             # Get play type stats
             elif stat_type == 'Play Types':
                 for play_type, defense in zip(play_types, play_type_defenses):
-                    features.extend(input_columns_map[stat_type][play_type]['offensive'])
+                    features.extend(manual_inputs_map[stat_type][play_type]['offensive'])
                     if defense:
-                        features.extend(input_columns_map[stat_type][play_type]['defensive'])
+                        features.extend(manual_inputs_map[stat_type][play_type]['defensive'])
 
             # Get shooting stats
             elif stat_type == 'Shooting':
                 for distance_range in distance_ranges:
-                    features.extend(input_columns_map[stat_type][distance_range]['offensive'])
+                    features.extend(manual_inputs_map[stat_type][distance_range]['offensive'])
 
-                    features.extend(input_columns_map[stat_type][distance_range]['defensive'])
+                    features.extend(manual_inputs_map[stat_type][distance_range]['defensive'])
 
             # Get tracking stats
             elif stat_type == 'Tracking':
                 for track_type in track_types:
-                    features.extend(input_columns_map[stat_type][track_type])
+                    features.extend(manual_inputs_map[stat_type][track_type])
 
-    stats = stats[features]
-    correlation_matrix = stats.corr()
-    plt.figure()
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1, center=0)
-    plt.title('Pearson Correlation Heatmap')
-    plt.show()
+    return features
+
+
+# Use a Pearson correlation matrix to find redundancies between columns
+def find_redundant_columns_pearson(data, threshold, already_chosen=None, one_by_one=False,
+                                   features_filename='features.pkl'):
+    # Get correlation matrix for data
+    corr_matrix = data.corr()
+
+    # Get the original set of features
+    chosen_features = list(corr_matrix.columns)
+    if already_chosen is not None:
+        chosen_features = already_chosen
+
+    # Loop over the correlation matrix
+    for i in range(len(corr_matrix.columns)):
+        for j in range(i + 1, len(corr_matrix.columns)):
+            # If the correlation between these columns meets the threshold, handle it
+            if abs(corr_matrix.iloc[i, j]) >= threshold:
+                col1 = corr_matrix.columns[i]
+                col2 = corr_matrix.columns[j]
+
+                # If both columns are still in the chosen features, print them
+                if col1 in chosen_features and col2 in chosen_features:
+                    correlation_value = corr_matrix.iloc[i, j]
+                    print(f"Correlation between {col1} and {col2}: {correlation_value:.2f}")
+
+                    # Prompt for removal of a column
+                    if one_by_one:
+                        remove = input(f'Remove [1/2/x]?: ')
+                        if remove == '1':
+                            chosen_features.remove(col1)
+                        elif remove == '2':
+                            chosen_features.remove(col2)
+
+    # Save chosen columns to file
+    if one_by_one:
+        with open(features_filename, 'wb') as fp:
+            pickle.dump(chosen_features, fp)
+
+
+# Use variance inflation factors to find redundancies between columns
+def find_redundant_columns_vif(data, threshold, already_chosen=None, one_by_one=False,
+                               features_filename='features.pkl'):
+    # Add intercept to the model
+    vif_model = sm.add_constant(data)
+
+    # Compute VIF for each predictor
+    vif_data = pd.DataFrame()
+    vif_data['Feature'] = vif_model.columns
+    vif_data['VIF'] = [variance_inflation_factor(vif_model.values, i) for i in range(vif_model.shape[1])]
+
+    # Get the original set of features
+    chosen_features = list(data.columns)
+    if already_chosen is not None:
+        chosen_features = already_chosen
+
+    # Loop over VIF for each predictor
+    for _, (feature, vif) in vif_data.iterrows():
+        # If the VIF for this column is above the threshold, handle it
+        if vif >= threshold and feature in chosen_features:
+            print(f"VIF for {feature}: {vif:.2f}")
+
+            # Prompt for removal of a column
+            if one_by_one:
+                remove = input(f'Remove [y/n]?: ')
+                if remove == 'y':
+                    chosen_features.remove(feature)
+
+    # Save chosen columns to file
+    if one_by_one:
+        with open(features_filename, 'wb') as fp:
+            pickle.dump(chosen_features, fp)
+
+
+if __name__ == '__main__':
+    seasons = range(2017, 2024)
+    seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
+    season_types = ['Regular Season']
+    save_filename = '../Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
+
+    # Get combined stats for every season
+    stats = combine_seasons(seasons, season_types, save_filename, 10, 12)
+
+    # Get manual input features
+    manual_inputs = get_input_features(seasons[0])
+    stats = stats[manual_inputs]
+
+    # find_redundant_columns_pearson(stats, 0.8, one_by_one=True, features_filename=f'chosen_features.pkl')
+    # find_redundant_columns_vif(stats, 10, one_by_one=True, features_filename=f'chosen_features.pkl')
+
+    # Load features chosen using Pearson correlation assistance
+    with open('chosen_features.pkl', 'rb') as fp:
+        chosen_inputs = pickle.load(fp)
+
+        # Only use features if they are available
+        input_features = []
+        for input_feature in chosen_inputs:
+            if input_feature in manual_inputs:
+                input_features.append(input_feature)
