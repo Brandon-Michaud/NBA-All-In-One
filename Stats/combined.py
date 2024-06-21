@@ -633,5 +633,5 @@ if __name__ == '__main__':
     season_types = ['Regular Season', 'Playoffs']
     totals_save_filename = '../Data/SeasonStats/Combined/Totals/{}_{}.csv'
     rate_adjusted_save_filename = '../Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
-    # combine_stats_seasons(seasons, season_types, totals_save_filename)
+    combine_stats_seasons(seasons, season_types, totals_save_filename)
     adjust_for_rate_seasons(seasons, season_types, totals_save_filename, rate_adjusted_save_filename, 'POSS', 100)

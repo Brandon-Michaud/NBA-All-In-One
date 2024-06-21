@@ -108,6 +108,75 @@ def get_defense_stats_seasons(seasons, season_types, save_filename, fail_filenam
         pickle.dump(failed_seasons, fp)
 
 
+# Combine players who played for more than one team for a single dataframe
+def combine_multi_team_players(df, defense_category):
+    # Define columns that will be used for weighted average
+    weighted_columns_map = {
+        '2 Pointers': ['FREQ', 'FG2_PCT', 'NS_FG2_PCT'],
+        '3 Pointers': ['FREQ', 'FG3_PCT', 'NS_FG3_PCT'],
+        'Greater Than 15Ft': ['FREQ', 'GT_15_PCT', 'NS_GT_15_PCT'],
+        'Less Than 6Ft': ['FREQ', 'LT_06_PCT', 'NS_LT_06_PCT'],
+        'Less Than 10Ft': ['FREQ', 'LT_10_PCT', 'NS_LT_10_PCT'],
+        'Overall': ['D_FG_PCT', 'NORMAL_FG_PCT'],
+    }
+    weighted_columns = weighted_columns_map[defense_category]
+
+    # Define columns that will be summed
+    sum_columns_map = {
+        '2 Pointers': ['FG2M', 'FG2A'],
+        '3 Pointers': ['FG3M', 'FG3A'],
+        'Greater Than 15Ft': ['FGM_GT_15', 'FGA_GT_15'],
+        'Less Than 6Ft': ['FGM_LT_06', 'FGA_LT_06'],
+        'Less Than 10Ft': ['FGM_LT_10', 'FGA_LT_10'],
+        'Overall': ['D_FGM', 'D_FGA'],
+    }
+    sum_columns = sum_columns_map[defense_category]
+
+    # Calculate the total number of games played by each player in the season
+    df['TOTAL_GP'] = df.groupby(['CLOSE_DEF_PERSON_ID'])['GP'].transform('sum')
+
+    # Computed weighted sum by games played for average/percentage columns
+    for weighted_column in weighted_columns:
+        df[f'WEIGHTED_{weighted_column}'] = df[weighted_column] * df['GP'] / df['TOTAL_GP']
+
+    # Group by player and sum the weighted columns
+    df_no_duplicates = df.groupby(['CLOSE_DEF_PERSON_ID', 'PLAYER_NAME']).agg(
+        PLAYER_LAST_TEAM_ID=('PLAYER_LAST_TEAM_ID', 'last'),
+        PLAYER_LAST_TEAM_ABBREVIATION=('PLAYER_LAST_TEAM_ABBREVIATION', 'last'),
+        PLAYER_POSITION=('PLAYER_POSITION', 'last'),
+        TOTAL__GP=('GP', 'sum'),
+        **{f'{column}': (column, 'sum') for column in sum_columns},
+        **{f'{column}': (f'WEIGHTED_{column}', 'sum') for column in weighted_columns}
+    ).reset_index()
+
+    return df_no_duplicates
+
+
+# Combine players who played for more than one team for every season
+def combine_multi_team_players_seasons(seasons, season_types, save_filename):
+    # Constants for finding completion percentage
+    n_seasons = len(seasons)
+    n_season_types = len(season_types)
+    n_defense_categories = len(defense_categories)
+
+    # Get combine multi-team players' defense stats for each season
+    for i, season in enumerate(seasons):
+        for j, season_type in enumerate(season_types):
+            for k, defense_category in enumerate(defense_categories):
+                percent_done = (((i * n_season_types * n_defense_categories) + (j * n_defense_categories) + k) /
+                                (n_seasons * n_season_types * n_defense_categories))
+                print(f'{percent_done:.2%} {season} {season_type}: {defense_category}')
+
+                # Load defense stats
+                defense_stats = pd.read_csv(save_filename.format(defense_category, season, season_type))
+
+                # Group by player and sum the weighted columns
+                no_duplicates = combine_multi_team_players(defense_stats, defense_category)
+
+                # Save data without duplicates
+                no_duplicates.to_csv(save_filename.format(defense_category, season, season_type), index=False)
+
+
 if __name__ == '__main__':
     seasons = range(2013, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
@@ -120,6 +189,7 @@ if __name__ == '__main__':
     #     os.makedirs(f'../Data/BoxScores/Defense/{defense_category}', exist_ok=True)
     # get_tracking_stats_every_day(seasons, season_types, schedule_filename, single_day_save_filename, 'Fails/failed_dates.pkl')
     get_defense_stats_seasons(seasons, season_types, whole_season_save_filename, 'Fails/defense.pkl')
+    combine_multi_team_players_seasons(seasons, season_types, whole_season_save_filename)
 
     # with open('Fails/general.pkl', 'rb') as fp:
     #     fails = pickle.load(fp)
