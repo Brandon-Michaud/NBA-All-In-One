@@ -64,8 +64,12 @@ column_names_maps = {
         },
     },
     'Hustle': {
-        'old': ['PLAYER_ID', 'CONTESTED_SHOTS', 'CONTESTED_SHOTS_2PT', 'CONTESTED_SHOTS_3PT', 'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'OFF_LOOSE_BALLS_RECOVERED', 'DEF_LOOSE_BALLS_RECOVERED', 'LOOSE_BALLS_RECOVERED', 'PCT_LOOSE_BALLS_RECOVERED_OFF', 'PCT_LOOSE_BALLS_RECOVERED_DEF'],
-        'new': ['PLAYER_ID', 'CONTESTED_SHOTS', 'CONTESTED_SHOTS_2PT', 'CONTESTED_SHOTS_3PT', 'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'O_LOOSE_BALLS_RECOVERED', 'D_LOOSE_BALLS_RECOVERED', 'LOOSE_BALLS_RECOVERED', 'O_PCT_LOOSE_BALLS_RECOVERED', 'D_PCT_LOOSE_BALLS_RECOVERED'],
+        'old': ['PLAYER_ID', 'CONTESTED_SHOTS', 'CONTESTED_SHOTS_2PT', 'CONTESTED_SHOTS_3PT', 'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'LOOSE_BALLS_RECOVERED'],
+        'new': ['PLAYER_ID', 'CONTESTED_SHOTS', 'CONTESTED_SHOTS_2PT', 'CONTESTED_SHOTS_3PT', 'DEFLECTIONS', 'CHARGES_DRAWN', 'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'LOOSE_BALLS_RECOVERED'],
+    },
+    'Loose Balls': {
+        'old': ['OFF_LOOSE_BALLS_RECOVERED', 'DEF_LOOSE_BALLS_RECOVERED', 'PCT_LOOSE_BALLS_RECOVERED_OFF', 'PCT_LOOSE_BALLS_RECOVERED_DEF'],
+        'new': ['O_LOOSE_BALLS_RECOVERED', 'D_LOOSE_BALLS_RECOVERED', 'O_PCT_LOOSE_BALLS_RECOVERED', 'D_PCT_LOOSE_BALLS_RECOVERED'],
     },
     'Play Types': {
         'Cut': {
@@ -284,8 +288,8 @@ rate_adjusted_columns = {
         'Usage': [],
     },
     'Hustle': ['CONTESTED_SHOTS', 'CONTESTED_SHOTS_2PT', 'CONTESTED_SHOTS_3PT', 'DEFLECTIONS', 'CHARGES_DRAWN',
-               'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'O_LOOSE_BALLS_RECOVERED', 'D_LOOSE_BALLS_RECOVERED',
-               'LOOSE_BALLS_RECOVERED'],
+               'SCREEN_ASSISTS', 'SCREEN_AST_PTS', 'LOOSE_BALLS_RECOVERED'],
+    'Loose Balls': ['O_LOOSE_BALLS_RECOVERED', 'D_LOOSE_BALLS_RECOVERED'],
     'Play Types': {
         'Cut': {
             'offensive': ['O_CUT_POSS', 'O_CUT_PTS', 'O_CUT_FGM', 'O_CUT_FGA', 'O_CUT_FGMX'],
@@ -394,6 +398,7 @@ def get_availability(season):
             'Defense': True,
             'General': True,
             'Hustle': True,
+            'Loose Balls': True,
             'Play Types': True,
             'Shooting': True,
             'Tracking': True
@@ -404,6 +409,7 @@ def get_availability(season):
             'Defense': True,
             'General': True,
             'Hustle': True,
+            'Loose Balls': False,
             'Play Types': True,
             'Shooting': True,
             'Tracking': True
@@ -414,6 +420,7 @@ def get_availability(season):
             'Defense': True,
             'General': True,
             'Hustle': False,
+            'Loose Balls': False,
             'Play Types': False,
             'Shooting': True,
             'Tracking': True
@@ -424,6 +431,7 @@ def get_availability(season):
             'Defense': False,
             'General': True,
             'Hustle': False,
+            'Loose Balls': False,
             'Play Types': False,
             'Shooting': True,
             'Tracking': False

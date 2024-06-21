@@ -38,7 +38,7 @@ def reduce_dimensions(data, principal_components, n_use):
 
 
 if __name__ == '__main__':
-    seasons = range(2015, 2024)
+    seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season', 'Playoffs']
 
@@ -57,16 +57,8 @@ if __name__ == '__main__':
     stats = stats[input_features]
 
     # Find principal components
-    n_components = 25
-    # principal_components = find_principal_components(stats, n_components, verbose=True)
-    #
-    # # Save principal components
-    # with open(f'Principal Components/{seasons[0]}_{n_components}.pkl', 'wb') as fp:
-    #     pickle.dump(principal_components, fp)
+    principal_components = find_principal_components(stats, 25, verbose=True)
 
-    # Load principal components
-    with open(f'Principal Components/{seasons[0]}_{n_components}.pkl', 'rb') as fp:
-        principal_components = pickle.load(fp)
-
-    reduced_stats = reduce_dimensions(stats, principal_components, 15)
-    reduced_stats.to_csv('test.csv', index=False)
+    # Save principal components
+    with open(f'Principal Components/{seasons[0]}.pkl', 'wb') as fp:
+        pickle.dump(principal_components, fp)
