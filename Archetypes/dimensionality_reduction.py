@@ -4,10 +4,10 @@ from sklearn.decomposition import PCA
 from feature_selection import *
 
 
-# Perform Principal Component Analysis to reduce the number of dimensions
-def reduce_dimensions_pca(data, num_dim):
+# Perform Principal Component Analysis to find the principal components
+def find_principal_components(data, n_components, verbose=False):
     # Perform PCA
-    pca = PCA(n_components=num_dim)
+    pca = PCA(n_components=n_components)
     pca.fit_transform(data)
 
     # Get the variance explained by each principal component
@@ -15,15 +15,30 @@ def reduce_dimensions_pca(data, num_dim):
     cumulative_explained_variance = explained_variance_ratio.cumsum()
 
     # Print the variance explained
-    for i, (variance, cumulative) in enumerate(zip(explained_variance_ratio, cumulative_explained_variance), start=1):
-        print(f"Principal Component {i}: Explained Variance = {variance:.4f}, "
-              f"Cumulative Explained Variance = {cumulative:.4f}")
+    if verbose:
+        for i, (variance, cumulative) in enumerate(zip(explained_variance_ratio, cumulative_explained_variance)):
+            print(f"Principal Component {i + 1}: Explained Variance = {variance:.4f}, "
+                  f"Cumulative Explained Variance = {cumulative:.4f}")
 
     return pca
 
 
+# Reduce the number of dimensions using principal components
+def reduce_dimensions(data, principal_components, n_use):
+    # Transform the data using the principal components
+    reduced_data = principal_components.transform(data)
+
+    # Select subset of principal components
+    reduced_data = reduced_data[:, :n_use]
+
+    # Convert to dataframe
+    reduced_data_df = pd.DataFrame(reduced_data, columns=[f'PC{i + 1}' for i in range(n_use)])
+
+    return reduced_data_df
+
+
 if __name__ == '__main__':
-    seasons = range(2017, 2024)
+    seasons = range(2015, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season', 'Playoffs']
 
@@ -41,10 +56,17 @@ if __name__ == '__main__':
     input_features = get_available_chosen_columns(seasons[0], chosen_inputs)
     stats = stats[input_features]
 
-    # Reduce the dimensionality of the stats using PCA
-    num_dim = 25
-    principal_components = reduce_dimensions_pca(stats, num_dim)
+    # Find principal components
+    n_components = 25
+    # principal_components = find_principal_components(stats, n_components, verbose=True)
+    #
+    # # Save principal components
+    # with open(f'Principal Components/{seasons[0]}_{n_components}.pkl', 'wb') as fp:
+    #     pickle.dump(principal_components, fp)
 
-    # Save principal components
-    with open(f'Principal Components/{seasons[0]}_{num_dim}.pkl', 'wb') as fp:
-        pickle.dump(principal_components, fp)
+    # Load principal components
+    with open(f'Principal Components/{seasons[0]}_{n_components}.pkl', 'rb') as fp:
+        principal_components = pickle.load(fp)
+
+    reduced_stats = reduce_dimensions(stats, principal_components, 15)
+    reduced_stats.to_csv('test.csv', index=False)
