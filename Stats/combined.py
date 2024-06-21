@@ -1,10 +1,10 @@
 import pandas as pd
-from tracking import track_types
-from general import measure_types as general_measure_types
-from playtype import play_types, defenses as play_type_defenses
-from defense import defense_categories
-from shooting import distance_ranges
 
+from Stats.defense import defense_categories
+from Stats.general import measure_types as general_measure_types
+from Stats.playtype import play_types, defenses as play_type_defenses
+from Stats.shooting import distance_ranges
+from Stats.tracking import track_types
 
 column_names_maps = {
     'Box Outs': {
@@ -192,8 +192,8 @@ column_names_maps = {
         },
         '8ft Range': {
             'offensive': {
-                'old': ['PLAYER_ID', 'Less Than 8 ft. FGM', 'Less Than 8 ft. FGA', 'Less Than 8 ft. FG_PCT', '8-16 ft. FGM', '8-16 ft. FGA', '8-16 ft. FG_PCT', '16-24 ft. FGM', '16-24 ft. FGA', '16-24 ft. FG_PCT', '24+ ft. FGM', '24+ ft. FGA', '24+ ft. FG_PCT',],
-                'new': ['PLAYER_ID', 'O_FGM_LT_08', 'O_FGA_LT_08', 'O_FG_PCT_LT_08', 'O_FGM_LT_16_GT_08', 'O_FGA_LT_16_GT_08', 'O_FG_PCT_LT_16_GT_08', 'O_FGM_LT_24_GT_16', 'O_FGA_LT_24_GT_16', 'O_FG_PCT_LT_24_GT_16', 'O_FGM_GT_24', 'O_FGA_GT_24', 'O_FG_PCT_GT_24',],
+                'old': ['PLAYER_ID', 'Less Than 8 ft. FGM', 'Less Than 8 ft. FGA', 'Less Than 8 ft. FG_PCT', '8-16 ft. FGM', '8-16 ft. FGA', '8-16 ft. FG_PCT', '16-24 ft. FGM', '16-24 ft. FGA', '16-24 ft. FG_PCT', '24+ ft. FGM', '24+ ft. FGA', '24+ ft. FG_PCT'],
+                'new': ['PLAYER_ID', 'O_FGM_LT_08', 'O_FGA_LT_08', 'O_FG_PCT_LT_08', 'O_FGM_LT_16_GT_08', 'O_FGA_LT_16_GT_08', 'O_FG_PCT_LT_16_GT_08', 'O_FGM_LT_24_GT_16', 'O_FGA_LT_24_GT_16', 'O_FG_PCT_LT_24_GT_16', 'O_FGM_GT_24', 'O_FGA_GT_24', 'O_FG_PCT_GT_24'],
             },
             'defensive': {
                 'old': ['PLAYER_ID', 'Less Than 8 ft. OPP_FGM', 'Less Than 8 ft. OPP_FGA', 'Less Than 8 ft. OPP_FG_PCT', '8-16 ft. OPP_FGM', '8-16 ft. OPP_FGA', '8-16 ft. OPP_FG_PCT', '16-24 ft. OPP_FGM', '16-24 ft. OPP_FGA', '16-24 ft. OPP_FG_PCT', '24+ ft. OPP_FGM', '24+ ft. OPP_FGA', '24+ ft. OPP_FG_PCT'],
@@ -547,7 +547,7 @@ def adjust_for_rate_single_season(season, season_type, totals_save_filename, rat
     # Get each available stat type
     stat_types = list(availability.keys())
 
-    # Merge all stats together for this season
+    # Adjust all stats together for this season
     for stat_type in stat_types:
         if availability[stat_type]:
             # Get box outs and hustle stats

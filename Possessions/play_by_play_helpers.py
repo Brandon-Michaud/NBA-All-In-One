@@ -1,6 +1,8 @@
 import math
 from enum import Enum
+
 import pandas as pd
+
 
 # Enumeration for type of play-by-play event
 class EventType(Enum):

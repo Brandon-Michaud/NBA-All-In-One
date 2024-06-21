@@ -1,6 +1,5 @@
-import requests
 import pandas as pd
-
+import requests
 
 stats_nba_com_headers = {
     'Connection': 'keep-alive',
