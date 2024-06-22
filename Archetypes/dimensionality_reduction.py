@@ -1,11 +1,12 @@
 import pickle
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from feature_selection import *
 
 
 # Perform Principal Component Analysis to find the principal components
-def find_principal_components(data, n_components, verbose=False):
+def find_principal_components(data, n_components, verbose=False, elbow_plot_savefile=None):
     # Perform PCA
     pca = PCA(n_components=n_components)
     pca.fit_transform(data)
@@ -16,9 +17,14 @@ def find_principal_components(data, n_components, verbose=False):
 
     # Print the variance explained
     if verbose:
-        for i, (variance, cumulative) in enumerate(zip(explained_variance_ratio, cumulative_explained_variance)):
-            print(f"Principal Component {i + 1}: Explained Variance = {variance:.4f}, "
-                  f"Cumulative Explained Variance = {cumulative:.4f}")
+        # Plot the explained variance ratio
+        plt.figure(figsize=(10, 6))
+        plt.plot(range(1, len(pca.explained_variance_ratio_) + 1), pca.explained_variance_ratio_.cumsum(), marker='o')
+        plt.xlabel('Number of Principal Components')
+        plt.ylabel('Cumulative Explained Variance')
+        plt.title('Explained Variance by Principal Components')
+        plt.grid(True)
+        plt.savefig(elbow_plot_savefile)
 
     return pca
 
@@ -57,8 +63,9 @@ if __name__ == '__main__':
     stats = stats[input_features]
 
     # Find principal components
-    principal_components = find_principal_components(stats, 25, verbose=True)
+    principal_components = find_principal_components(stats, 50, verbose=True,
+                                                     elbow_plot_savefile=f'Principal Components/elbow_{seasons[0]}.png')
 
     # Save principal components
-    with open(f'Principal Components/{seasons[0]}.pkl', 'wb') as fp:
+    with open(f'Principal Components/pcs_{seasons[0]}.pkl', 'wb') as fp:
         pickle.dump(principal_components, fp)
