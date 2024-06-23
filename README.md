@@ -1,7 +1,7 @@
 # NBA-All-In-One
 This repository is a tutorial project for creating a new all-in-one NBA statistic from scratch using Python.
 The process used in this project was the result of comprehensive research into the techniques and practices used in the best publicly available models.
-Links to resources I found helpful can be found in [Appendix A](#a-helpful-resources). 
+Links to resources I found helpful can be found [below](#helpful-resources). 
 The steps in the process are:
 - Downloading play-by-play data from stats.nba.com
 - Parsing play-by-play data to create possessions
@@ -13,8 +13,13 @@ The steps in the process are:
 - Stabilizing small sample sizes with averages based on offensive role
 - Adjusting plus-minus data for luck (shooting variance)
 
-## Appendix
-### A: Helpful Resources
+I am learning as I go, doing my best to document my thought process behind the code and any issues that arise.
+This project is very large and time-consuming, so it will remain a work in progress for some time.
+If you have any criticisms or suggestions for the code, please leave a pull request or issue on the GitHub.
+You can also contact me through the email in my GitHub bio. 
+More detailed documentation can be found in the directories for the individual steps in the process.
+
+## Helpful Resources
 Techniques
 - [Luck Adjustment](https://fansided.com/2018/01/08/nylon-calculus-calculating-luck-adjusted-ratings/)
 - Archetypes/Roles
