@@ -179,9 +179,9 @@ if __name__ == '__main__':
     seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season']
-    all_possessions_filename = 'Data/Possessions/possessions_all.csv'
-    players_and_ids_filename = 'Data/players_and_ids.csv'
-    rapm_filename = 'Data/RAPM/rapm_{}_{}.csv'
+    all_possessions_filename = '../Data/Possessions/possessions_all.csv'
+    players_and_ids_filename = '../Data/players_and_ids.csv'
+    rapm_filename = '../Data/RAPM/rapm_{}_{}.csv'
 
     all_possessions = pd.read_csv(all_possessions_filename)
     player_names_and_ids = pd.read_csv(players_and_ids_filename)
@@ -191,4 +191,4 @@ if __name__ == '__main__':
     folds = 5
 
     calculate_x_season_rapms(all_possessions, seasons, season_types, 5, player_names_and_ids, folds, lambdas,
-                             'Data/RAPM/FiveSeasons/rapm_regular_season_{}_{}.csv')
+                             '../Data/RAPM/FiveSeasons/rapm_regular_season_{}_{}.csv')
