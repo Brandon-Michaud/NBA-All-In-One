@@ -12,7 +12,7 @@ The key differences are:
 To download data from stats.nba.com, very specific request headers are needed.
 The data used in this project is also returned as JSON objects which represent tables.
 The code for handling requests and responses is found in [`api_helpers.py`](../api_helpers.py).
-This code is also used in other directories, so it is on the same level as the `Possessions` directory in the file tree.
+This code is also used in other directories, so it is on the same level as the [`Possessions`](../Possessions) directory in the file tree.
 
 ### 1: Download Play-by-Play Data
 The first step is to download all the play-by-play for every game for every season since 1996-97.
