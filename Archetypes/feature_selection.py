@@ -1,7 +1,8 @@
-import pandas as pd
 import pickle
-from sklearn.preprocessing import StandardScaler
+
+import pandas as pd
 import statsmodels.api as sm
+from sklearn.preprocessing import StandardScaler
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from Stats.combined import (get_availability, track_types, general_measure_types,
@@ -95,6 +96,7 @@ manual_inputs_map = {
             'defensive': [],
         },
     },
+    'Starts': [],
     'Tracking': {
         'CatchShoot': ['CATCH_SHOOT_FGM', 'CATCH_SHOOT_FGA', 'CATCH_SHOOT_FG_PCT', 'CATCH_SHOOT_PTS', 'CATCH_SHOOT_FG3M', 'CATCH_SHOOT_FG3A', 'CATCH_SHOOT_FG3_PCT', 'CATCH_SHOOT_EFG_PCT'],
         'Defense': [],

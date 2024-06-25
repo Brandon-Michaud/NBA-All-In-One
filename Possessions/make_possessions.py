@@ -1,7 +1,7 @@
 import pickle
 import traceback
 
-from play_by_play_helpers import *
+from Possessions.play_by_play_helpers import *
 
 
 # Convert string representation of a list to an actual list

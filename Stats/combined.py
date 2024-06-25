@@ -215,6 +215,10 @@ column_names_maps = {
             },
         },
     },
+    'Starts': {
+        'old': ['PLAYER_ID', 'GS'],
+        'new': ['PLAYER_ID', 'GS'],
+    },
     'Tracking': {
         'CatchShoot': {
             'old': ['PLAYER_ID', 'CATCH_SHOOT_FGM', 'CATCH_SHOOT_FGA', 'CATCH_SHOOT_FG_PCT', 'CATCH_SHOOT_PTS', 'CATCH_SHOOT_FG3M', 'CATCH_SHOOT_FG3A', 'CATCH_SHOOT_FG3_PCT', 'CATCH_SHOOT_EFG_PCT'],
@@ -364,6 +368,7 @@ rate_adjusted_columns = {
                           'D_FGA_BC', 'D_FGM_C3', 'D_FGA_C3'],
         },
     },
+    'Starts': [],
     'Tracking': {
         'CatchShoot': ['CATCH_SHOOT_FGM', 'CATCH_SHOOT_FGA', 'CATCH_SHOOT_PTS', 'CATCH_SHOOT_FG3M', 'CATCH_SHOOT_FG3A'],
         'Defense': ['D_RIM_FGM', 'D_RIM_FGA'],
@@ -401,6 +406,7 @@ def get_availability(season):
             'Loose Balls': True,
             'Play Types': True,
             'Shooting': True,
+            'Starts': True,
             'Tracking': True
         }
     elif season >= '2015-16':
@@ -412,6 +418,7 @@ def get_availability(season):
             'Loose Balls': False,
             'Play Types': True,
             'Shooting': True,
+            'Starts': True,
             'Tracking': True
         }
     elif season >= '2013-14':
@@ -423,6 +430,7 @@ def get_availability(season):
             'Loose Balls': False,
             'Play Types': False,
             'Shooting': True,
+            'Starts': True,
             'Tracking': True
         }
     else:
@@ -434,6 +442,7 @@ def get_availability(season):
             'Loose Balls': False,
             'Play Types': False,
             'Shooting': True,
+            'Starts': True,
             'Tracking': False
         }
     return availability
@@ -515,6 +524,15 @@ def combine_single_season_stats(season, season_type, save_filename):
 
                     # Merge with other stats
                     combined = combined.merge(d_stats, on='PLAYER_ID', how='outer')
+
+            # Get starts
+            elif stat_type == 'Starts':
+                column_names_map = column_names_maps[stat_type]
+                stats = get_data_and_change_columns(f'../Data/SeasonStats/Starts/{season}_{season_type}.csv',
+                                                    column_names_map)
+
+                # Merge with other stats
+                combined = combined.merge(stats, on='PLAYER_ID', how='outer')
 
             # Get tracking stats
             elif stat_type == 'Tracking':
@@ -600,6 +618,12 @@ def adjust_for_rate_single_season(season, season_type, totals_save_filename, rat
                     stats[d_columns_to_adjust] = (stats[d_columns_to_adjust]
                                                   .apply(lambda x: (x / (stats[rate_column]) * rate_factor), axis=0))
 
+            # Get starts
+            elif stat_type == 'Starts':
+                columns_to_adjust = rate_adjusted_columns[stat_type]
+                stats[columns_to_adjust] = (stats[columns_to_adjust]
+                                            .apply(lambda x: x / (stats[rate_column] * rate_factor), axis=0))
+
             # Get tracking stats
             elif stat_type == 'Tracking':
                 for track_type in track_types:
@@ -619,7 +643,7 @@ def adjust_for_rate_seasons(seasons, season_types, totals_save_filename, rate_ad
     n_season_types = len(season_types)
     for i, season in enumerate(seasons):
         for j, season_type in enumerate(season_types):
-            percent_done = ((i * n_season_types + j) /(n_seasons * n_season_types))
+            percent_done = ((i * n_season_types + j) / (n_seasons * n_season_types))
             print(f'{percent_done:.2%} {season} {season_type}')
 
             # Adjust colums for rate for this season

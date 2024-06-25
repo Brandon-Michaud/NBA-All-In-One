@@ -1,7 +1,6 @@
-import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
-import matplotlib.pyplot as plt
+
 from dimensionality_reduction import *
 
 

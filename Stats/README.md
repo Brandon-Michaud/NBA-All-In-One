@@ -39,6 +39,12 @@ Availability for these stats begins in 2017-18.
 Some players can have multiple rows if they changed teams mid-season, so extra code is needed to combine them.
 The code is in [`playtype.py`](playtype.py)
 
+### Game Started
+This stat is not directly available (that I know of, at least) from stats.nba.com for whatever reason.
+Instead, we have to calculate it by hand.
+This is not too difficult because we already know the starters for each period for each game from the [`players_on_court.py`](../Possessions/players_on_court.py) file in the [`Possessions`](../Possessions) directory.
+For that reason, running all scripts in the [`Possessions`](../Possessions) directory is required before calculating the games started.
+
 ## Combining All Stats
 The last step is to combine all the different kinds of stats into a single table. 
 I also rename the columns to make them consistent and easier to understand. 
