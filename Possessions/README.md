@@ -4,6 +4,7 @@ Much of this code is adapted from [Ryan Davis' GitHub tutorial](https://github.c
 The key differences are:
 - My code is structured in a way that allows the files to be imported into other Python files and used.
 - My code extends the single game examples from Ryan Davis to multiple games.
+- My code adds luck adjustment
 - I fixed a few issues I noticed with parsing possessions.
 - I added extra documentation in the form of comments to the code.
 
@@ -40,6 +41,17 @@ There are some play-by-play files that have human errors and thus cannot be pars
 A list of these I found and how I handled them can be found in [Appendix A](#a-play-by-play-errors).
 Once again, failed games are saved to pickle files so that they can be analyzed and retried.
 More fine-grained details can be found in the comments of the code itself.
+
+### 2.5: Adjust For Luck
+This step is technically not required, but recommended.
+Adjusting for luck attempts to account for shooting variance.
+A player may have a higher/lower RAPM because their teammates shot better/worse than their average when playing with the player.
+This may be a result of something the player is doing on the court (good/bad spacing, passing, etc.), but there is also an element of randomness, or luck.
+This step adjusts for luck by replacing points from shots with expected points from shots.
+This is a crude way of doing this, because it assumes that any difference in shooting is due to luck, not anything a player might be doing to affect shooting performance (on offense or defense).
+It does have the benefit that it allows for player-specific expected points because it is done before the RAPM calculation.
+In the future, I want to add to the code to regress shooting performance to average.
+All code can be found in [`luck_adjust_play_by_play.py`](luck_adjust_play_by_play.py).
 
 ### 3: Find Possessions
 The next step is to determine possessions from the play-by-play data.
