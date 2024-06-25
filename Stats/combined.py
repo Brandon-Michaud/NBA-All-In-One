@@ -457,7 +457,7 @@ def get_data_and_change_columns(data_filename, column_names_map):
     
     
 # Combine different stat categories for a single season
-def combine_single_season_stats(season, season_type, save_filename):
+def combine_stats_single_season(season, season_type, save_filename):
     # Get availability of stats
     availability = get_availability(season)
 
@@ -558,7 +558,34 @@ def combine_stats_seasons(seasons, season_types, save_filename):
             print(f'{percent_done:.2%} {season} {season_type}')
 
             # Combine stats for this season
-            combine_single_season_stats(season, season_type, save_filename)
+            combine_stats_single_season(season, season_type, save_filename)
+
+
+# Combine stats for all seasons
+def combine_seasons(seasons, season_types, season_filename, all_filename):
+    # Combine stats for all seasons
+    combined = []
+    for i, season in enumerate(seasons):
+        for j, season_type in enumerate(season_types):
+            # Get stats for the season
+            stats = pd.read_csv(season_filename.format(season, season_type))
+
+            # Fill missing cells with 0s
+            # Assuming that missing data means a player did not record a single stat for the column
+            stats = stats.fillna(0)
+
+            # Add columns for the season
+            stats['SEASON'] = season
+            stats['SEASON_TYPE'] = season_type
+
+            # Add season stats to list of stats for every season
+            combined.append(stats)
+
+    # Concatenate dataframes for all seasons
+    combined_df = pd.concat(combined)
+
+    # Save combined season stats to csv
+    combined_df.to_csv(all_filename, index=False)
 
 
 # Adjust columns for rate for a single season
@@ -657,5 +684,7 @@ if __name__ == '__main__':
     season_types = ['Regular Season', 'Playoffs']
     totals_save_filename = '../Data/SeasonStats/Combined/Totals/{}_{}.csv'
     rate_adjusted_save_filename = '../Data/SeasonStats/Combined/RateAdjusted/{}_{}.csv'
-    combine_stats_seasons(seasons, season_types, totals_save_filename)
-    adjust_for_rate_seasons(seasons, season_types, totals_save_filename, rate_adjusted_save_filename, 'POSS', 100)
+    # combine_stats_seasons(seasons, season_types, totals_save_filename)
+    # adjust_for_rate_seasons(seasons, season_types, totals_save_filename, rate_adjusted_save_filename, 'POSS', 100)
+    combine_seasons(seasons, season_types, totals_save_filename, '../Data/SeasonStats/Combined/all_seasons_totals.csv')
+    combine_seasons(seasons, season_types, rate_adjusted_save_filename, '../Data/SeasonStats/Combined/all_seasons_rate_adjusted.csv')
