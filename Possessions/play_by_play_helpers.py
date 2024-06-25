@@ -341,7 +341,11 @@ def is_end_of_possession(idx, event, events, event_window=20, time_window=10):
 
 
 # We need to know how many points each shot is worth:
-def extract_points(event):
+def extract_points(event, use_points_column=True):
+    # If there is a points column, return its value
+    if use_points_column and 'POINTS' in event.index:
+        return event['POINTS']
+
     # Get the event type
     e_type = EventType.from_number(event[event_type])
 

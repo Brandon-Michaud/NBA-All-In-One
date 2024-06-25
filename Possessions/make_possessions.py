@@ -87,8 +87,9 @@ def count_points_in_possession(possession):
         # Get the event type
         e_type = EventType.from_number(event[event_type])
 
-        # Check if event is a made shot or made free throw
-        if e_type == EventType.MadeShot or (e_type == EventType.FreeThrow and not is_miss(event)):
+        # Get points from all shots make or miss
+        # Do so for all shots to handle luck adjustments
+        if e_type == EventType.MadeShot or e_type == EventType.MissedShot or e_type == EventType.FreeThrow:
             # If the team has already scored points in the possession, add to the total
             if event[player1_team_id] in points:
                 points[event[player1_team_id]] += extract_points(event)
@@ -295,8 +296,8 @@ if __name__ == '__main__':
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season', 'Playoffs']
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
-    play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
+    play_by_play_filename = '../Data/PlayByPlay/LuckAdjusted/pbp_{}.csv'
     players_at_period_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
-    possessions_filename = '../Data/Possessions/possessions_{}.csv'
+    possessions_filename = '../Data/Possessions/LuckAdjusted/possessions_{}.csv'
     get_possessions_seasons(seasons, season_types, schedule_filename, play_by_play_filename,
                             players_at_period_filename, possessions_filename, 'Fails/failed_possessions.pkl')
