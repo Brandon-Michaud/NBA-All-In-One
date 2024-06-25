@@ -49,6 +49,7 @@ A player may have a higher/lower RAPM because their teammates shot better/worse 
 This may be a result of something the player is doing on the court (good/bad spacing, passing, etc.), but there is also an element of randomness, or luck.
 This step adjusts for luck by replacing points from shots with expected points from shots.
 This is a crude way of doing this, because it assumes that any difference in shooting is due to luck, not anything a player might be doing to affect shooting performance (on offense or defense).
+It also does not allow for separately computing luck adjustments for offense and defense.
 It does have the benefit that it allows for player-specific expected points because it is done before the RAPM calculation.
 In the future, I want to add to the code to regress shooting performance to average.
 All code can be found in [`luck_adjust_play_by_play.py`](luck_adjust_play_by_play.py).
