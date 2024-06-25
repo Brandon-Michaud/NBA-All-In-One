@@ -15,6 +15,7 @@ def luck_adjust_play_by_play_single_game(game_id, stats, play_by_play_filename, 
     play_by_play['POINTS'] = 0.0
 
     # Add luck-adjusted points value for every event
+    # TODO: Adjust percentages based on shot-bucket distances
     for idx, event in play_by_play.iterrows():
         # Get the event type
         e_type = EventType.from_number(event[event_type])
