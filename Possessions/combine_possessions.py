@@ -112,9 +112,9 @@ if __name__ == '__main__':
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season', 'Playoffs']
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
-    possessions_filename = '../Data/Possessions/possessions_{}.csv'
-    season_possessions_filename = '../Data/Possessions/possessions_{}_{}.csv'
-    all_possessions_filename = '../Data/Possessions/possessions_all.csv'
+    possessions_filename = '../Data/Possessions/LuckAdjusted/Games/possessions_{}.csv'
+    season_possessions_filename = '../Data/Possessions/LuckAdjusted/Seasons/possessions_{}_{}.csv'
+    all_possessions_filename = '../Data/Possessions/LuckAdjusted/possessions_all.csv'
     # combine_multiple_season_possessions(seasons, season_types, schedule_filename, possessions_filename,
     #                                     season_possessions_filename)
     combine_all_seasons_possessions(seasons, season_types, season_possessions_filename, all_possessions_filename)

@@ -376,8 +376,8 @@ if __name__ == '__main__':
     season_types = ['Regular Season', 'Playoffs']
     advanced_box_score_url = 'https://stats.nba.com/stats/boxscoretraditionalv2/?gameId={0}&startPeriod=0&endPeriod=14&startRange={1}&endRange={2}&rangeType=2'
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
-    play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
-    players_on_court_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
+    play_by_play_filename = '../Data/PlayByPlay/Standard/pbp_{}.csv'
+    players_on_court_filename = '../Data/PeriodStarters/pap_{}.csv'
     get_players_on_court_fast(seasons, season_types, schedule_filename, play_by_play_filename,
                               players_on_court_filename, 'Fails/failed_starters.pkl')
     fix_fast_failures('Fails/failed_starters.pkl', play_by_play_filename, advanced_box_score_url,

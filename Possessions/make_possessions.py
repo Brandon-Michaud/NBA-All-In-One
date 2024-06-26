@@ -297,7 +297,7 @@ if __name__ == '__main__':
     season_types = ['Regular Season', 'Playoffs']
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
     play_by_play_filename = '../Data/PlayByPlay/LuckAdjusted/pbp_{}.csv'
-    players_at_period_filename = '../Data/PlayersAtPeriod/pap_{}.csv'
-    possessions_filename = '../Data/Possessions/LuckAdjusted/possessions_{}.csv'
+    players_at_period_filename = '../Data/PeriodStarters/pap_{}.csv'
+    possessions_filename = '../Data/Possessions/LuckAdjusted/Games/possessions_{}.csv'
     get_possessions_seasons(seasons, season_types, schedule_filename, play_by_play_filename,
                             players_at_period_filename, possessions_filename, 'Fails/failed_possessions.pkl')
