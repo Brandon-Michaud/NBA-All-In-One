@@ -80,7 +80,8 @@ def make_ridge_model(train_x, train_y, folds, weights, lambdas):
 
 
 # Extract coefficients from the model
-def extract_coefficients_for_players(model, stat_name, unique_ids, player_names_and_ids):
+def extract_coefficients_for_players(model, stat_name, unique_ids, player_names_and_ids, include_ranks=False,
+                                     include_intercept=False):
     # Convert unique player IDs from vector to matrix
     unique_ids_vector = np.array(unique_ids).reshape((len(unique_ids), 1))
 
@@ -96,22 +97,24 @@ def extract_coefficients_for_players(model, stat_name, unique_ids, player_names_
     intercept = model.intercept_
 
     # Apply new column names
-    players_coef.columns = ['player_id', f'{stat_name}__Off', f'{stat_name}__Def']
+    players_coef.columns = ['PLAYER_ID', f'O-{stat_name}', f'D-{stat_name}']
 
     # Calculate sum of offensive and defensive coefficients
     # TODO: Weigh sum by number of offensive and defensive possessions played. They are often not equal
-    players_coef[stat_name] = players_coef[f'{stat_name}__Off'] + players_coef[f'{stat_name}__Def']
+    players_coef[stat_name] = players_coef[f'O-{stat_name}'] + players_coef[f'D-{stat_name}']
 
     # Rank players by coefficients
-    players_coef['{0}_Rank'.format(stat_name)] = players_coef[stat_name].rank(ascending=False)
-    players_coef['{0}__Off_Rank'.format(stat_name)] = players_coef['{0}__Off'.format(stat_name)].rank(ascending=False)
-    players_coef['{0}__Def_Rank'.format(stat_name)] = players_coef['{0}__Def'.format(stat_name)].rank(ascending=False)
+    if include_ranks:
+        players_coef['{0}_Rank'.format(stat_name)] = players_coef[stat_name].rank(ascending=False)
+        players_coef['O-{0}_Rank'.format(stat_name)] = players_coef['O-{0}'.format(stat_name)].rank(ascending=False)
+        players_coef['D-{0}_Rank'.format(stat_name)] = players_coef['D-{0}'.format(stat_name)].rank(ascending=False)
 
     # Add the intercept for reference
-    players_coef[f'{stat_name}__Intercept'] = intercept[0]
+    if include_intercept:
+        players_coef[f'{stat_name}_Intercept'] = intercept[0]
 
     # Merge with player names to provide insight beyond just player ID
-    players_coef = players_coef.merge(player_names_and_ids, how='inner', left_on='player_id', right_on=player_id)
+    players_coef = players_coef.merge(player_names_and_ids, how='inner', on=player_id)
 
     return players_coef
 
@@ -135,9 +138,6 @@ def calculate_rapm(possessions, player_names_and_ids, folds, lambdas, save_file)
 
     # Round the values for ease of reading
     rapms = np.round(rapms, decimals=3)
-
-    # Sort the columns alphabetically
-    rapms = rapms.reindex(sorted(rapms.columns), axis=1)
 
     # Save RAPM values to a .csv file
     rapms.to_csv(save_file, index=False)
@@ -181,7 +181,6 @@ if __name__ == '__main__':
     season_types = ['Regular Season']
     all_possessions_filename = '../Data/Possessions/Standard/possessions_all.csv'
     players_and_ids_filename = '../Data/players_and_ids.csv'
-    rapm_filename = '../Data/RAPM/rapm_{}_{}.csv'
 
     all_possessions = pd.read_csv(all_possessions_filename)
     player_names_and_ids = pd.read_csv(players_and_ids_filename)
@@ -190,9 +189,5 @@ if __name__ == '__main__':
     lambdas = [0.01, 0.05, 0.1]
     folds = 5
 
-    # calculate_x_season_rapms(all_possessions, seasons, season_types, 5, player_names_and_ids, folds, lambdas,
-    #                          '../Data/RAPM/FiveSeasons/rapm_regular_season_{}_{}.csv')
-
-    possessions = pd.read_csv('../Data/Possessions/LuckAdjusted/possessions_2023-24_Regular Season.csv')
-    save_file = 'test1.csv'
-    calculate_rapm(possessions, player_names_and_ids, folds, lambdas, save_file)
+    calculate_x_season_rapms(all_possessions, seasons, season_types, 1, player_names_and_ids, folds, lambdas,
+                             '../Data/RAPM/Standard/Seasons/rapm_regular_season_{}_{}.csv')
