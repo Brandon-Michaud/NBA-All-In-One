@@ -91,7 +91,7 @@ if __name__ == '__main__':
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
     season_types = ['Regular Season', 'Playoffs']
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
-    play_by_play_filename = '../Data/PlayByPlay/pbp_{}.csv'
+    play_by_play_filename = '../Data/PlayByPlay/Standard/pbp_{}.csv'
     get_players_and_ids_seasons(seasons, season_types, schedule_filename, play_by_play_filename,
                                 '../Data/players_and_ids.csv')
 
