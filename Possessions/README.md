@@ -23,6 +23,12 @@ Any failed downloads will be stored as dictionaries in pickle files so that they
 In my experiences it is not uncommon for a few downloads to fail for no apparent reason.
 Retrying usually fixes the issue.
 
+### 1.5: Fix Player ID Errors in Play-by-Play
+The 1996-97 play-by-play files contain some errors with player IDs I noticed.
+Melvin Booker is often referenced using player ID 775, but his correct player ID is 511.
+Lionel Simmons is often referenced using player ID 471, but his correct player ID is 1489.
+Both of these issues are checked and fixed for every game in the 1996-97 season in [`fix_play_by_play_ids`](fix_play_by_play_ids.py).
+
 ### 2: Find Starters For Each Period
 The next step is to parse the play-by-play data to find the starters for each team for each period for each game.
 This is necessary because there is no event in the play-by-play data detailing who began the period on the court.

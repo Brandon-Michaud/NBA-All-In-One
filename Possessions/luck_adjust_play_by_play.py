@@ -69,9 +69,9 @@ def luck_adjust_play_by_plays(seasons, season_types, schedule_filename, stats_fi
 
 
 if __name__ == '__main__':
-    seasons = range(2023, 2024)
+    seasons = range(1996, 2024)
     seasons = [f'{season}-{((season % 100) + 1) % 100:02}' for season in seasons]
-    season_types = ['Regular Season']
+    season_types = ['Regular Season', 'Playoffs']
     schedule_filename = '../Data/Schedules/schedule_{}_{}.csv'
     play_by_play_filename = '../Data/PlayByPlay/Standard/pbp_{}.csv'
     stats_filename = '../Data/SeasonStats/General/Base/{}_{}.csv'
