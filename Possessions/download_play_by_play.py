@@ -22,6 +22,9 @@ def download_play_by_play(schedule_url, seasons, season_types, schedule_filename
                 failures[schedule_url.format(season, season_type)] = (error, traceback.format_exc())
                 continue
 
+            # Remove missing/wrong games
+            schedule = schedule[schedule['WL'].notna()]
+
             # Save schedule in case it is needed later
             schedule.to_csv(schedule_filename.format(season, season_type), index=False)
 
@@ -70,4 +73,4 @@ if __name__ == '__main__':
     season_types = ['Regular Season', 'Playoffs']
     schedule_url = "http://stats.nba.com/stats/leaguegamelog/?leagueId=00&season={}&seasonType={}&playerOrTeam=T&counter=0&sorter=PTS&direction=ASC&dateFrom=&dateTo="
     play_by_play_url = "https://stats.nba.com/stats/playbyplayv2/?gameId={0}&startPeriod=0&endPeriod=14"
-    download_play_by_play(schedule_url, seasons, season_types, '../Data/Schedules/schedule_{}_{}.csv', play_by_play_url, '../Data/PlayByPlay/pbp_{}.csv', 'failed_links.pkl')
+    download_play_by_play(schedule_url, seasons, season_types, '../Data/Schedules/schedule_{}_{}.csv', play_by_play_url, '../Data/PlayByPlay/Standard/pbp_{}.csv', 'Fails/failed_play_by_plays.pkl')
