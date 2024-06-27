@@ -144,10 +144,9 @@ def get_possession_team(event, team1, team2):
 
 # Create a dictionary for a possession that includes the game id, period, teams, players on the court, start and
 # end time of the possession, points scored by each team, and which team was on offense during the possession.
-def create_possession_dictionary(possession):
+def create_possession_dictionary(possession, previous_possession_end):
     # Get the start time and end time of possession
     times_of_events = [event[time_elapsed] for event in possession]
-    possession_start = min(times_of_events)
     possession_end = max(times_of_events)
 
     # Get the points scored in the possession
@@ -203,7 +202,7 @@ def create_possession_dictionary(possession):
         'team2_player5': str(team2_player5),
         'game_id': str(game_id),
         'period': period,
-        'possession_start': possession_start,
+        'possession_start': previous_possession_end,
         'possession_end': possession_end,
         'team1_points': team1_points,
         'team2_points': team2_points,
@@ -244,8 +243,11 @@ def get_possessions_single_game(game_id, play_by_play_filename, players_at_perio
 
     # Get possession dictionary for each possession in game
     possession_dictionaries = []
+    previous_possession_end = 0
     for possession in possessions:
-        possession_dictionaries.append(create_possession_dictionary(possession))
+        possession_dictionary = create_possession_dictionary(possession, previous_possession_end)
+        previous_possession_end = possession_dictionary['possession_end']
+        possession_dictionaries.append(possession_dictionary)
 
     # Build a dataframe from the list of possession dictionaries
     possessions_df = pd.DataFrame(possession_dictionaries)
