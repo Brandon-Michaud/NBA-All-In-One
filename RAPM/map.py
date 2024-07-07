@@ -58,7 +58,7 @@ if __name__ == '__main__':
     possessions = pd.read_csv(all_possessions_filename)
     player_names_and_ids = pd.read_csv(players_and_ids_filename)
 
-    possessions = possessions[possessions['season'] == '2023-24'].iloc[:10000].copy()
+    possessions = possessions[possessions['season'] == '2023-24'].copy()
 
     # Find unique player IDs
     unique_ids = find_unique_ids(possessions)
